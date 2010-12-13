@@ -6,6 +6,7 @@ from django.template import RequestContext
 from models import Favorite
 from forms import DeleteFavoriteForm
 from django.http import HttpResponse
+from django.utils import simplejson
 
 @login_required
 def ajax_add_favorite(request):
@@ -23,7 +24,10 @@ def ajax_add_favorite(request):
         
         #if not create it
         favorite = Favorite.objects.create_favorite(obj, request.user)
-        return HttpResponse(status=200)
+        count = Favorite.objects.favorites_for_object(obj).count()
+        return HttpResponse(simplejson.dumps({'count': count}),
+                            'application/javascript',
+                            status=200)
     else:
         return HttpResponse(status=405)
         
@@ -39,7 +43,11 @@ def ajax_remove_favorite(request):
                                                content_type=content_type,
                                                user=request.user)
         favorite.delete()
-        return HttpResponse(status=200)
+        obj = content_type.get_object_for_this_type(pk=object_id)
+        count = Favorite.objects.favorites_for_object(obj).count()
+        return HttpResponse(simplejson.dumps({'count': count}),
+                            'application/javascript',
+                            status=200)
     else:
         return HttpResponse(status=405)
     

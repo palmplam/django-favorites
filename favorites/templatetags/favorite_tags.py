@@ -25,11 +25,13 @@ def add_remove_favorite(object, user):
             favorite = favorite[0]
         else:
             favorite = None
+    count = Favorite.objects.favorites_for_object(object).count()
             
     return {"object":object,
             "content_type": content_type,
             "user": user,
-            "favorite":favorite}
+            "favorite":favorite,
+            "count": count}
     
     
     

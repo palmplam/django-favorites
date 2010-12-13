@@ -1,33 +1,45 @@
-<div id="add-remove-favorite" class="{% if favorite %}has-favorite{% endif %}"></div>
+<nobr>
+  <span class="favorites-add-remove">
+    <a {% if favorite %}class="has-favorite"{% endif %} id="favorite-{{ content_type.pk }}-{{ object.pk }}" href="#">
+      <span class="favorites-count"></span>
+    </a>
+    &nbsp;<span id="count-{{ content_type.pk }}-{{ object.pk }}">{{ count }}</span>
+  </span>
+</nobr>
 
 <script type="text/javascript">
-    $(document).ready(function(){
-        $("#add-remove-favorite").click(function(){
-            if($("#add-remove-favorite").hasClass("has-favorite")){
-                $.ajax({
-                    url: "{% url favorite_ajax_remove %}",
-                    type: "POST",
-                    data: {
-                            content_type_id: {{content_type.pk}},
-                            object_id: {{object.pk}},
-                        },
-                    success: function(){
-                        $("#add-remove-favorite").removeClass("has-favorite")
-                    }
-                });
-            }else{
-                $.ajax({
-                    url: "{% url favorite_ajax_add %}",
-                    type: "POST",
-                    data: {
-                            content_type_id: {{content_type.pk}},
-                            object_id: {{object.pk}},
-                        },
-                    success: function(){
-                        $("#add-remove-favorite").addClass("has-favorite")
-                    }
-                });
-            }
-        })
+$(document).ready(function(){
+    $("#favorite-{{ content_type.pk }}-{{ object.pk }}").click(function(){
+        if($(this).hasClass("has-favorite")){
+            $.ajax({
+                url: "{% url favorite_ajax_remove %}",
+                type: "POST",
+                data: {
+                    content_type_id: {{content_type.pk}},
+                    object_id: {{object.pk}},
+                },
+                dataType: 'json',
+                success: function(data){
+                    $("#favorite-{{ content_type.pk }}-{{ object.pk }}").removeClass("has-favorite");
+                    $('#count-{{ content_type.pk }}-{{ object.pk }}').text(data.count);
+                }
+            });
+        }else{
+            $.ajax({
+                url: "{% url favorite_ajax_add %}",
+                type: "POST",
+                data: {
+                    content_type_id: {{content_type.pk}},
+                    object_id: {{object.pk}},
+                },
+                dataType: 'json',
+                success: function(data){
+                    $("#favorite-{{ content_type.pk }}-{{ object.pk }}").addClass("has-favorite");
+                    $('#count-{{ content_type.pk }}-{{ object.pk }}').text(data.count);
+                }
+            });
+        }
+        return false;
     })
+})
 </script>
