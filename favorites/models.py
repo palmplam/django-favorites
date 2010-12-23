@@ -33,13 +33,39 @@ class FavoriteManager(models.Manager):
 
         return qs
 
+    def favorites_for_objects(self, object_list, user=None):
+        """
+        Get a dictionary mapping object ids to favorite
+        of votes for each object.
+        """
+        object_ids = [o.pk for o in object_list]
+        if not object_ids:
+            return {}
+
+        content_type = ContentType.objects.get_for_model(object_list[0])
+
+        qs = self.get_query_set().filter(content_type=content_type,
+                                         object_id__in=object_ids)
+        counters = qs.values('object_id').annotate(count=models.Count('object_id'))
+        results = {}
+        for c in counters:
+            results.setdefault(c['object_id'], {})['count'] = c['count']
+            results.setdefault(c['object_id'], {})['is_favorite'] = False
+            results.setdefault(c['object_id'], {})['content_type_id'] = content_type.id
+        if user and user.is_authenticated():
+            qs = qs.filter(user=user)
+            for f in qs:
+                results.setdefault(f.object_id, {})['is_favorite'] = True
+
+        return results
+
     def favorite_for_user(self, obj, user):
         """Returns the favorite, if exists for obj by user
         """
         content_type = ContentType.objects.get_for_model(type(obj))
         return self.get_query_set().get(content_type=content_type,
                                     user=user, object_id=obj.pk)
-    
+
     @classmethod
     def create_favorite(cls, content_object, user):
         content_type = ContentType.objects.get_for_model(type(content_object))
@@ -71,6 +97,6 @@ class Favorite(models.Model):
         return "%s likes %s" % (self.user, self.content_object)
 
 @receiver(models.signals.post_delete)
-def remove_comments(sender, **kwargs):
+def remove_favorites(sender, **kwargs):
     instance = kwargs.get('instance')
     Favorite.objects.favorites_for_object(instance).delete()
