@@ -1,11 +1,11 @@
-<nobr>
+
   <span class="favorites-add-remove">
     <a {% if is_favorite %}class="has-favorite"{% endif %} id="favorite-{{ content_type_id }}-{{ object_id }}" href="#">
-      <span class="favorites-count"></span>
+      <span class="favorites-count"></span>Fav
     </a>
     &nbsp;<span id="count-{{ content_type_id }}-{{ object_id }}">{{ count }}</span>
   </span>
-</nobr>
+
 
 <script type="text/javascript">
 $(document).ready(function(){
@@ -16,7 +16,8 @@ $(document).ready(function(){
                 type: "POST",
                 data: {
                     content_type_id: {{ content_type_id }},
-                    object_id: {{ object_id }}
+                    object_id: {{ object_id }},
+                    csrfmiddlewaretoken : '{{ csrf_token }}',
                 },
                 dataType: 'json',
                 success: function(data){
@@ -30,7 +31,8 @@ $(document).ready(function(){
                 type: "POST",
                 data: {
                     content_type_id: {{ content_type_id }},
-                    object_id: {{ object_id }}
+                    object_id: {{ object_id }},
+                    csrfmiddlewaretoken : '{{ csrf_token }}',
                 },
                 dataType: 'json',
                 success: function(data){
