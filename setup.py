@@ -1,4 +1,14 @@
 from distutils.core import setup
+import os
+
+
+modules = [
+    'favorites.migrations',
+    'favorites.templatetags',
+    'favorites.templates.favorites',
+    'favorites.templatetags',
+]
+
 
 setup(
     name = 'favorites',
@@ -6,7 +16,13 @@ setup(
     description = 'Generic favorites application for Django',
     author = 'Andrew Gwozdziewycz',
     author_email = 'git@apgwoz.com',
-    packages = ['favorites'],
+    packages = ['favorites'] + modules,
+    include_package_data=True,
+    package_data = {
+           '': ['*.txt', '*.rst'],
+           'favorites': ['templates/favorites/*.html'],
+       },
+    
     classifiers = ['Development Status :: 4 - Beta',
                    'Environment :: Web Environment',
                    'Framework :: Django',
