@@ -1,5 +1,4 @@
 from django.db import models, connection
-from django.dispatch import receiver
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.contenttypes.models import ContentType
@@ -81,7 +80,7 @@ class FavoriteManager(models.Manager):
 class Favorite(models.Model):
     user = models.ForeignKey(User)
     content_type = models.ForeignKey(ContentType)
-    object_id = models.TextField(_('object ID'))
+    object_id = models.IntegerField(_('object ID'))
     content_object = generic.GenericForeignKey('content_type', 'object_id')
 
     created_on = models.DateTimeField(auto_now_add=True)
@@ -96,7 +95,9 @@ class Favorite(models.Model):
     def __unicode__(self):
         return "%s likes %s" % (self.user, self.content_object)
 
-@receiver(models.signals.post_delete)
 def remove_favorites(sender, **kwargs):
     instance = kwargs.get('instance')
     Favorite.objects.favorites_for_object(instance).delete()
+    
+models.signals.post_delete.connect(remove_favorites)
+    
