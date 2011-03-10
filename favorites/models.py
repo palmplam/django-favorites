@@ -97,7 +97,9 @@ class Favorite(models.Model):
 
 def remove_favorites(sender, **kwargs):
     instance = kwargs.get('instance')
-    Favorite.objects.favorites_for_object(instance).delete()
+    # Solves the session pk issue.
+    if isinstance(instance.pk, int):
+        Favorite.objects.favorites_for_object(instance).delete()
     
 models.signals.post_delete.connect(remove_favorites)
     
