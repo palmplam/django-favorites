@@ -145,3 +145,35 @@ def delete_favorite(request, object_id, form_class=None, redirect_to=None,
 def drop_favorite(request, object_id, redirect_to=None):
     Favorite.objects.filter(pk=object_id, user=request.user).delete()
     return redirect(redirect_to or request.META.get('HTTP_REFERER', 'favorites'))
+
+@login_required
+def toggle_favorite(request, object_id, queryset, redirect_to=None,
+        template_name=None, extra_context=None):
+    """
+    Generic `toggle favorite` view
+    If it is already a favourite, remove it. If it's not, make it a favourite.
+
+    `queryset` - required for content object retrieving
+    `redirect_to` defaults to referer if possible. Can be changed if required
+
+    Raises Http404 if content object does not exist.
+
+    Example of usage (urls.py):
+        url(r'favorites/add/(?P<object_id>\d+)/$', 
+            'favorites.views.create_favorite', kwargs={
+                'queryset': MyModel.objects.all(),
+            }, name='add-to-favorites')
+        
+    """
+    obj = get_object_or_404(queryset, pk=object_id)
+    content_type=ContentType.objects.get_for_model(obj)
+
+    favs = Favorite.objects.filter(content_type=content_type, 
+            object_id=object_id, user=request.user)
+    if not favs: 
+        favorite = Favorite.objects.create_favorite(obj, request.user)
+    else:
+        favs.delete()
+
+    return redirect(redirect_to or request.META.get('HTTP_REFERER', 'favorites'))
+
