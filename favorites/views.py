@@ -59,7 +59,7 @@ def create_favorite(request, object_id, queryset, redirect_to=None,
     Generic `add to favorites` view
 
     `queryset` - required for content object retrieving
-    `redirect_to` is set to `favorites` by default - change it if needed
+    `redirect_to` defaults to referer if possible. Can be changed if required
 
     Raises Http404 if content object does not exist.
 
@@ -73,12 +73,11 @@ def create_favorite(request, object_id, queryset, redirect_to=None,
     obj = get_object_or_404(queryset, pk=object_id)
     content_type=ContentType.objects.get_for_model(obj)
 
-    if Favorite.objects.filter(content_type=content_type, object_id=object_id,\
+    if not Favorite.objects.filter(content_type=content_type, object_id=object_id,\
                               user=request.user):
-        return redirect(redirect_to or 'favorites')
+        favorite = Favorite.objects.create_favorite(obj, request.user)
 
-    favorite = Favorite.objects.create_favorite(obj, request.user)
-    return redirect(redirect_to or 'favorites')
+    return redirect(redirect_to or request.META.get('HTTP_REFERER', 'favorites'))
 
 
 @login_required
