@@ -147,7 +147,7 @@ def drop_favorite(request, object_id, redirect_to=None):
     return redirect(redirect_to or request.META.get('HTTP_REFERER', 'favorites'))
 
 @login_required
-def toggle_favorite(request, object_id, queryset, redirect_to=None,
+def toggle_favorite(request, content_type_id, object_id, redirect_to=None,
         template_name=None, extra_context=None):
     """
     Generic `toggle favorite` view
@@ -165,8 +165,10 @@ def toggle_favorite(request, object_id, queryset, redirect_to=None,
             }, name='add-to-favorites')
         
     """
-    obj = get_object_or_404(queryset, pk=object_id)
-    content_type=ContentType.objects.get_for_model(obj)
+    #obj = get_object_or_404(queryset, pk=object_id)
+    #content_type=ContentType.objects.get_for_model(obj)
+    content_type = ContentType.objects.get(pk=content_type_id)
+    obj = content_type.get_object_for_this_type(pk=object_id)
 
     favs = Favorite.objects.filter(content_type=content_type, 
             object_id=object_id, user=request.user)
