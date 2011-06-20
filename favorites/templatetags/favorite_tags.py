@@ -9,6 +9,7 @@ from favorites.models import Favorite
 
 register = template.Library()
 
+
 @register.filter
 def is_favorite(object, user):
     """
@@ -16,7 +17,9 @@ def is_favorite(object, user):
     """
     if not user or not user.is_authenticated():
         return False
-    return Favorite.objects.favorites_for_object(object, user).count()>0
+    query = Favorite.objects.favorites_for_object(object, user)
+    count = query.count()
+    return count > 0
 
 
 @register.inclusion_tag("favorites/favorite_add_remove.html")
@@ -30,12 +33,13 @@ def add_remove_favorite(object, user):
         else:
             favorite = None
     count = Favorite.objects.favorites_for_object(object).count()
-            
+
     return {"object_id": object.pk,
             "content_type_id": content_type.pk,
-            "is_favorite":favorite,
+            "is_favorite": favorite,
             "count": count}
-    
+
+
 class FavoritesForObjectsNode(Node):
     def __init__(self, object_list, user, context_var):
         self.object_list = Variable(object_list)
@@ -45,9 +49,11 @@ class FavoritesForObjectsNode(Node):
     def render(self, context):
         object_list = self.object_list.resolve(context)
         user = self.user.resolve(context)
-        context[self.context_var] = Favorite.objects.favorites_for_objects(object_list, user)
+        query = Favorite.objects.favorites_for_objects(object_list, user)
+        context[self.context_var] = query
         return ''
-    
+
+
 def do_favorites_for_objects(parser, token):
     """
     {% favorites_for_objects <object_list> <user> as <template_var> %}
@@ -59,7 +65,8 @@ def do_favorites_for_objects(parser, token):
         raise TemplateSyntaxError(_("third argument to %s tag must be 'as'") % bits[0])
     return FavoritesForObjectsNode(bits[1], bits[2], bits[4])
 register.tag('favorites_for_objects', do_favorites_for_objects)
-    
+
+
 class FavoriteEntryForItemNode(template.Node):
     def __init__(self, item, dictionary, context_var):
         self.item = item
@@ -74,6 +81,7 @@ class FavoriteEntryForItemNode(template.Node):
             return ''
         context[self.context_var] = dictionary.get("%s" % item.id, None)
         return ''
+
 
 def do_favorite_entry_for_item(parser, token):
     """
