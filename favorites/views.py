@@ -64,7 +64,6 @@ def create_favorite_confirmation(request,
                                  object_id,
                                  app_name,
                                  model_name,
-                                 clazz,
                                  redirect_to=None,
                                  template_name=None,
                                  extra_context=None):
