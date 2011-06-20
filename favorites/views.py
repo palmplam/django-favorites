@@ -3,10 +3,15 @@ from django.shortcuts import get_object_or_404, redirect, render_to_response
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
 from django.template import RequestContext
-from models import Favorite
-from forms import DeleteFavoriteForm
+from django.db.models import get_model
 from django.http import HttpResponse
 from django.utils import simplejson
+
+from models import Favorite
+
+from forms import DeleteFavoriteForm
+
+
 
 @login_required
 def ajax_add_favorite(request):
@@ -55,24 +60,16 @@ def ajax_remove_favorite(request):
 
 
 @login_required
-def create_favorite(request, object_id, queryset, redirect_to=None,
-        template_name=None, extra_context=None):
-    """
-    Generic `add to favorites` view
-
-    `queryset` - required for content object retrieving
-    `redirect_to` defaults to referer if possible. Can be changed if required
-
-    Raises Http404 if content object does not exist.
-
-    Example of usage (urls.py):
-        url(r'favorites/add/(?P<object_id>\d+)/$',
-            'favorites.views.create_favorite', kwargs={
-                'queryset': MyModel.objects.all(),
-            }, name='add-to-favorites')
-    """
-    obj = get_object_or_404(queryset, pk=object_id)
-    content_type = ContentType.objects.get_for_model(obj)
+def create_favorite_confirmation(request,
+                                 object_id,
+                                 app_name,
+                                 model_name,
+                                 clazz,
+                                 redirect_to=None,
+                                 template_name=None,
+                                 extra_context=None):
+    model = get_model(app_name, model_name)
+    content_type = ContentType.objects.get_for_model(model)
 
     if not Favorite.objects.filter(content_type=content_type,
                                    object_id=object_id,
