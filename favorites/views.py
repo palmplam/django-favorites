@@ -62,13 +62,12 @@ def ajax_remove_favorite(request):
 @login_required
 def create_favorite_confirmation(request,
                                  object_id,
-                                 app_name,
-                                 model_name,
-                                 redirect_to=None,
-                                 template_name=None,
-                                 extra_context=None):
-    model = get_model(app_name, model_name)
+                                 app_label,
+                                 object_name,
+                                 redirect_to=None):
+    model = get_model(app_label, object_name)
     content_type = ContentType.objects.get_for_model(model)
+    obj = get_object_or_404(model, pk=object_id)
 
     if not Favorite.objects.filter(content_type=content_type,
                                    object_id=object_id,
