@@ -13,15 +13,17 @@ def ajax_add_favorite(request):
     """ Adds favourite returns Http codes"""
     if request.method == "POST":
         object_id = request.POST.get("object_id")
-        content_type=get_object_or_404(ContentType, pk=request.POST.get("content_type_id"))
+        content_type = get_object_or_404(ContentType,
+                                         pk=request.POST.get("content_type_id"))
         obj = content_type.get_object_for_this_type(pk=object_id)
 
         # check if it was created already
-        if Favorite.objects.filter(content_type=content_type, object_id=object_id,\
-                                  user=request.user):
+        if Favorite.objects.filter(content_type=content_type,
+                                   object_id = object_id,
+                                   user=request.user):
             # return conflict response code if already satisfied
             return HttpResponse(status=409)
-        
+
         #if not create it
         favorite = Favorite.objects.create_favorite(obj, request.user)
         count = Favorite.objects.favorites_for_object(obj).count()
@@ -30,15 +32,15 @@ def ajax_add_favorite(request):
                             status=200)
     else:
         return HttpResponse(status=405)
-        
-        
+
+
 @login_required
 def ajax_remove_favorite(request):
     """ Adds favourite returns Http codes"""
     if request.method == "POST":
         object_id = request.POST.get("object_id")
-        content_type=get_object_or_404(ContentType,
-                                       pk=request.POST.get("content_type_id"))
+        content_type = get_object_or_404(ContentType,
+                                         pk=request.POST.get("content_type_id"))
         favorite = get_object_or_404(Favorite, object_id=object_id,
                                                content_type=content_type,
                                                user=request.user)
@@ -50,8 +52,8 @@ def ajax_remove_favorite(request):
                             status=200)
     else:
         return HttpResponse(status=405)
-    
-    
+
+
 @login_required
 def create_favorite(request, object_id, queryset, redirect_to=None,
         template_name=None, extra_context=None):
@@ -64,20 +66,22 @@ def create_favorite(request, object_id, queryset, redirect_to=None,
     Raises Http404 if content object does not exist.
 
     Example of usage (urls.py):
-        url(r'favorites/add/(?P<object_id>\d+)/$', 
+        url(r'favorites/add/(?P<object_id>\d+)/$',
             'favorites.views.create_favorite', kwargs={
                 'queryset': MyModel.objects.all(),
             }, name='add-to-favorites')
-        
     """
     obj = get_object_or_404(queryset, pk=object_id)
-    content_type=ContentType.objects.get_for_model(obj)
+    content_type = ContentType.objects.get_for_model(obj)
 
-    if not Favorite.objects.filter(content_type=content_type, object_id=object_id,\
-                              user=request.user):
+    if not Favorite.objects.filter(content_type=content_type,
+                                   object_id=object_id,
+                                   user=request.user):
         favorite = Favorite.objects.create_favorite(obj, request.user)
-
-    return redirect(redirect_to or request.META.get('HTTP_REFERER', 'favorites'))
+    if redirect_to:
+        return redirect(redirect_to)
+    else:
+        return(request.META.get('HTTP_REFERER', 'favorites'))
 
 
 @login_required
@@ -92,15 +96,16 @@ def favorite_list(request, model_class, **kwargs):
     Other parameters are same as object_list.
 
     Example of usage (urls.py):
-        url(r'favorites/my_model/$', 
+        url(r'favorites/my_model/$',
             'favorites.views.favorite_list', kwargs={
                 'template_name': 'favorites/mymodel_list.html',
                 'model_class': get_model('my_app.MyModel'),
                 'paginate_by': 25,
             }, name='favorites-mymodel')
     """
-    queryset = kwargs.get('queryset',Favorite.objects.favorites_for_model(
-        model_class, request.user))
+    default_queryset = Favorite.objects.favorites_for_model(model_class,
+                                                            request.user)
+    queryset = kwargs.get('queryset', default_queryset)
     return object_list(request, queryset, **kwargs)
 
 
@@ -137,14 +142,23 @@ def delete_favorite(request, object_id, form_class=None, redirect_to=None,
     ctx.update({
         'form': form,
     })
+    if template_name:
+        return render_to_response(template_name,
+                                  RequestContext(request, ctx))
+    else:
+        return render_to_response('favorites/favorite_delete.html',
+                                  RequestContext(request, ctx))
 
-    return render_to_response(template_name or 'favorites/favorite_delete.html',
-            RequestContext(request, ctx))
 
 @login_required
 def drop_favorite(request, object_id, redirect_to=None):
-    Favorite.objects.filter(pk=object_id, user=request.user).delete()
-    return redirect(redirect_to or request.META.get('HTTP_REFERER', 'favorites'))
+    Favorite.objects.filter(pk=object_id,
+                            user=request.user).delete()
+    if redirect_to:
+        return redirect(redirect_to)
+    else:
+        return(request.META.get('HTTP_REFERER', 'favorites'))
+
 
 @login_required
 def toggle_favorite(request, content_type_id, object_id, redirect_to=None,
@@ -159,23 +173,25 @@ def toggle_favorite(request, content_type_id, object_id, redirect_to=None,
     Raises Http404 if content object does not exist.
 
     Example of usage (urls.py):
-        url(r'favorites/add/(?P<object_id>\d+)/$', 
+        url(r'favorites/add/(?P<object_id>\d+)/$',
             'favorites.views.create_favorite', kwargs={
                 'queryset': MyModel.objects.all(),
             }, name='add-to-favorites')
-        
     """
     #obj = get_object_or_404(queryset, pk=object_id)
     #content_type=ContentType.objects.get_for_model(obj)
     content_type = ContentType.objects.get(pk=content_type_id)
     obj = content_type.get_object_for_this_type(pk=object_id)
 
-    favs = Favorite.objects.filter(content_type=content_type, 
-            object_id=object_id, user=request.user)
+    favs = Favorite.objects.filter(content_type=content_type,
+                                   object_id=object_id,
+                                   user=request.user)
     if not favs: 
         favorite = Favorite.objects.create_favorite(obj, request.user)
     else:
         favs.delete()
 
-    return redirect(redirect_to or request.META.get('HTTP_REFERER', 'favorites'))
-
+    if redirect_to:
+        return redirect(redirect_to)
+    else:
+        return(request.META.get('HTTP_REFERER', 'favorites'))
