@@ -5,6 +5,8 @@ from django.template import Node
 from django.template import TemplateSyntaxError
 from django.template import Variable
 from django.utils.translation import ugettext_lazy as _
+from django.template.defaulttags import URLNode
+
 from favorites.models import Favorite
 
 register = template.Library()
@@ -104,3 +106,7 @@ def do_favorite_entry_for_item(parser, token):
         raise template.TemplateSyntaxError("fourth argument to '%s' tag must be 'as'" % bits[0])
     return FavoriteEntryForItemNode(bits[1], bits[3], bits[5])
 register.tag('favorite_entry_for_item', do_favorite_entry_for_item)
+
+@register.simpletags
+def url_add_to_favorite_confirmation(view_name, *args):
+    return URLNode(view_name, args, [], [])
