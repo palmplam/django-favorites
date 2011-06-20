@@ -72,7 +72,7 @@ def create_favorite_confirmation(request,
     if not Favorite.objects.filter(content_type=content_type,
                                    object_id=object_id,
                                    user=request.user):
-        favorite = Favorite.objects.create_favorite(obj, request.user)
+        Favorite.objects.create_favorite(obj, request.user)
     if redirect_to:
         return redirect(redirect_to)
     else:
