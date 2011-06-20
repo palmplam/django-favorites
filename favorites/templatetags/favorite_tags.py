@@ -86,7 +86,7 @@ class FavoriteEntryForItemNode(template.Node):
 def do_favorite_entry_for_item(parser, token):
     """
     Given an object and a dictionary keyed with object ids - as
-    returned by the ``favorites_for_objects`` template tags - 
+    returned by the ``favorites_for_objects`` template tags -
     retrieves the value for the given object and
     stores it in a context variable, storing ``None`` if no value
     exists for the given object.
