@@ -115,7 +115,7 @@ def create_favorite(request, default_redirect='/'):
 
             url = reverse('add-to-favorites-confirmation', args=args)
             return redirect(url)
-    return HttpResponseBadRequest()  # FIXME : is it good ? (amirouche)
+    return HttpResponse(status=405)
 
 
 @login_required
