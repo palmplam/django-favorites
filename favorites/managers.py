@@ -1,8 +1,6 @@
 from django.db import models, connection
 from django.contrib.contenttypes.models import ContentType
 
-from models import Favorite
-
 qn = connection.ops.quote_name
 
 class FavoritesManagerMixin(object):
@@ -102,6 +100,7 @@ class FavoriteManager(models.Manager):
     @classmethod
     def create_favorite(cls, content_object, user):
         content_type = ContentType.objects.get_for_model(type(content_object))
+        Favorite = models.get_model('favorites', 'Favorite')
         favorite = Favorite(
             user=user,
             content_type=content_type,

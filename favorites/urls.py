@@ -18,7 +18,7 @@ urlpatterns = patterns("",
 
                        # folders urls
                        url('folders/',
-                           ListView.as_view(queryset = Folder.objects.all()),
+                           'favorites.views.list_folder',
                            name = 'folders'),
                        url('^folder/add/',
                            'favorites.views.create_folder',

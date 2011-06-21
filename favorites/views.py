@@ -24,6 +24,12 @@ from favorites.forms import DeleteFolderForm
 
 
 @login_required
+def list_folder(request):
+    object_list = Folder.objects.filter(user=request.user)
+    return render_to_response('favorites/folder_list.html', 
+                              RequestContext(request, {'object_list': object_list}))
+    
+@login_required
 def create_folder(request):
     if request.method == 'POST':
         form = FolderForm(request.POST)
@@ -87,64 +93,22 @@ def delete_folder(request):
 
 
 @login_required
-def ajax_add_favorite(request):
-    """ Adds favourite returns Http codes"""
-    if request.method == "POST":
-        object_id = request.POST.get("object_id")
-        content_type = get_object_or_404(ContentType,
-                                         pk=request.POST.get("content_type_id"))
-        obj = content_type.get_object_for_this_type(pk=object_id)
-
-        # check if it was created already
-        if Favorite.objects.filter(content_type=content_type,
-                                   object_id = object_id,
-                                   user=request.user):
-            # return conflict response code if already satisfied
-            return HttpResponse(status=409)
-
-        #if not create it
-        favorite = Favorite.objects.create_favorite(obj, request.user)
-        count = Favorite.objects.favorites_for_object(obj).count()
-        return HttpResponse(simplejson.dumps({'count': count}),
-                            'application/javascript',
-                            status=200)
-    else:
-        return HttpResponse(status=405)
-
-
-@login_required
-def ajax_remove_favorite(request):
-    """ Adds favourite returns Http codes"""
-    if request.method == "POST":
-        object_id = request.POST.get("object_id")
-        content_type = get_object_or_404(ContentType,
-                                         pk=request.POST.get("content_type_id"))
-        favorite = get_object_or_404(Favorite, object_id=object_id,
-                                               content_type=content_type,
-                                               user=request.user)
-        favorite.delete()
-        obj = content_type.get_object_for_this_type(pk=object_id)
-        count = Favorite.objects.favorites_for_object(obj).count()
-        return HttpResponse(simplejson.dumps({'count': count}),
-                            'application/javascript',
-                            status=200)
-    else:
-        return HttpResponse(status=405)
-
-
-@login_required
 def create_favorite_confirmation(request,
                                  app_label,
                                  object_name,
                                  object_id):
+    """Renders a formular to get confirmation to favorite the
+    object represented by `app_label`, `object_name` and `object_id`
+    creation. It raise a 404 exception if there is not such object."""
+
     model = get_model(app_label, object_name)
     content_type = ContentType.objects.get_for_model(model)
     obj = content_type.get_object_for_this_type(pk=object_id)
 
-    if Favorite.objects.filter(content_type=content_type,
-                               object_id=object_id,
-                               user=request.user):
-        return HttpResponseBadRequest()
+    object = get_object_for_this_type(Favorite,
+                                      content_type=content_type,
+                                      object_id=object_id,
+                                      user=request.user)
 
     initial = {'app_label': app_label,
                'object_name': object_name,
@@ -152,12 +116,15 @@ def create_favorite_confirmation(request,
     form = CreateFavoriteHiddenForm(initial=initial)
 
     ctx = RequestContext(request, {'form': form, 'object': obj})
-
     return render_to_response('favorites/confirm_favorite.html', ctx)
 
 
 @login_required
-def create_favorite(request, default_redirect='/'):
+def create_favorite(request):
+    """Validates POST and create the favorite object if there isn't
+    any such favorite already. If validation fails the it returns a
+    bad request error. If the validation succeed the favorite is added
+    to user profile and a redirection is returned"""
     if request.method == 'POST':
         form  = CreateFavoriteHiddenForm(request.POST)
         if form.is_valid():
@@ -173,19 +140,8 @@ def create_favorite(request, default_redirect='/'):
                                            object_id=object_id,
                                            user=request.user):
                 Favorite.objects.create_favorite(obj, request.user)
-            try:
-                return redirect(request.GET['next'])
-            except:
-                return redirect(default_redirect)
-
-        else:
-            args = (form.cleaned_data['app_label'],
-                    form.cleaned_data['object_name'],
-                    form.cleaned_data['object_id'])
-
-            url = reverse('add-to-favorites-confirmation', args=args)
-            return redirect(url)
-    return HttpResponse(status=405)
+                return redirect(request.GET.get('next', '/'))
+    return HttpResponseBadRequest
 
 
 @login_required
