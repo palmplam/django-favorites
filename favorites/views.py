@@ -6,13 +6,84 @@ from django.template import RequestContext
 from django.db.models import get_model
 from django.http import HttpResponse
 from django.http import HttpResponseBadRequest
+from django.http import HttpResponseForbidden
 from django.utils import simplejson
 from django.core.urlresolvers import reverse
 
-from models import Favorite
+from favorites.models import Favorite
+from favorites.models import Folder
 
 from favorites.forms import DeleteFavoriteForm
 from favorites.forms import CreateFavoriteHiddenForm
+
+from favorites.forms import FolderForm
+from favorites.forms import DeleteFolderForm
+
+
+### FOLDER VIEWS ##############################################################
+
+
+@login_required
+def create_folder(request):
+    if request.method == 'POST':
+        form = FolderForm(request.POST)
+        if form.is_valid():
+            name = form.cleaned_data['name']
+            Folder(name=name, user=request.user).save()
+            return redirect(request.GET.get('next', '/'))
+    form = FolderForm()
+    next = request.GET.get('next', None)
+    return render_to_response('favorites/create_folder.html',
+                              RequestContext(request, {'form': form,
+                                                       'next': next}))
+
+
+@login_required
+def update_folder(request, object_id):
+    folder = get_object_or_404(Folder, pk=object_id)
+
+    if folder.user != request.user:
+        return HttpResponseForbidden()
+
+    if request.method == 'POST':
+        form = FolderForm(request.POST)
+        if form.is_valid():
+            folder.name = form.cleaned_data['name']
+            folder.save()
+            return redirect(request.GET.get('next', '/'))
+    form = FolderForm(initial={'name': folder.name})
+    next = request.GET.get('next', None)
+    return render_to_response('favorites/folder_update.html',
+                               RequestContext(request, {'form': form,
+                                                        'next': next,
+                                                        'folder': folder}))
+
+
+@login_required
+def delete_folder_confirmation(request, object_id):
+    form = DeleteFolderForm(initial={'object_id': object_id})
+    folder = get_object_or_404(Folder, pk=object_id)
+    next = request.GET.get('next', None)
+    return render_to_response('favorites/delete_folder_confirmation.html',
+                              RequestContext(request, {'form': form,
+                                                       'folder': folder,
+                                                       'next': next}))
+@login_required
+def delete_folder(request):
+    if request.method == 'POST':
+        form = DeleteFolderForm(request.POST)
+        if form.is_valid():
+            object_id = form.cleaned_data['object_id']
+            folder = get_object_or_404(Folder, pk=object_id)
+            if request.user == folder.user:
+                folder.delete()
+                return redirect(request.GET.get('next', '/'))
+            else:
+                return HttpResponseForbidden()
+    return HttpResponseBadRequest()
+
+
+### FAVORITE VIEWS ############################################################
 
 
 @login_required
@@ -73,8 +144,7 @@ def create_favorite_confirmation(request,
     if Favorite.objects.filter(content_type=content_type,
                                object_id=object_id,
                                user=request.user):
-        # FIXME: it's already a favorite what should we do ? (amirouche)
-        pass
+        return HttpResponseBadRequest()
 
     initial = {'app_label': app_label,
                'object_name': object_name,

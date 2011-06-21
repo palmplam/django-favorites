@@ -2,6 +2,20 @@ from django import forms
 from models import Favorite
 
 
+### FOLDER FORMS ############################################################
+
+
+class FolderForm(forms.Form):
+    name = forms.CharField(max_length=100)
+
+
+class DeleteFolderForm(forms.Form):
+    object_id = forms.IntegerField(widget=forms.HiddenInput())
+
+
+### FAVORITE FORMS ##########################################################
+
+
 class CreateFavoriteHiddenForm(forms.Form):
     """Form to confirm favorite creation"""
     app_label = forms.CharField(max_length=100,

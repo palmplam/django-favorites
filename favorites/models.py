@@ -79,11 +79,19 @@ class FavoriteManager(models.Manager):
         return favorite
 
 
+class Folder(models.Model):
+    user = models.ForeignKey(User)
+    name = models.CharField(max_length=100)
+
+
 class Favorite(models.Model):
     user = models.ForeignKey(User)
+
     content_type = models.ForeignKey(ContentType)
     object_id = models.IntegerField(_('object ID'))
     content_object = generic.GenericForeignKey('content_type', 'object_id')
+
+    folder = models.ForeignKey(Folder, null=True)
 
     created_on = models.DateTimeField(auto_now_add=True)
 
