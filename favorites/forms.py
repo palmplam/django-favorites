@@ -1,6 +1,16 @@
 from django import forms
 from models import Favorite
 
+
+class CreateFavoriteHiddenForm(forms.Form):
+    """Form to confirm favorite creation"""
+    app_label = forms.CharField(max_length=100,
+                                widget=forms.HiddenInput())
+    object_name = forms.CharField(max_length=100,
+                                  widget=forms.HiddenInput())
+    object_id = forms.IntegerField(widget=forms.HiddenInput())
+
+
 class DeleteFavoriteForm(forms.ModelForm):
     """
     base class for deleting favorite instance
