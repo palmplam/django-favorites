@@ -182,13 +182,3 @@ def delete_favorite(request, object_id, form_class=None, redirect_to=None,
     else:
         return render_to_response('favorites/favorite_delete.html',
                                   RequestContext(request, ctx))
-
-
-@login_required
-def drop_favorite(request, object_id, redirect_to=None):
-    Favorite.objects.filter(pk=object_id,
-                            user=request.user).delete()
-    if redirect_to:
-        return redirect(redirect_to)
-    else:
-        return(request.META.get('HTTP_REFERER', 'favorites'))
