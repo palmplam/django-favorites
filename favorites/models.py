@@ -5,11 +5,14 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 
 from favorites.managers import FavoriteManager
+from favorites.managers import FolderManager
 
 
 class Folder(models.Model):
     user = models.ForeignKey(User)
     name = models.CharField(max_length=100)
+
+    objects = FolderManager()
 
 
 class Favorite(models.Model):
