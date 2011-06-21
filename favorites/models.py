@@ -4,6 +4,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 
+
 class FavoriteManager(models.Manager):
     """ A Manager for Favorites
     """
@@ -11,7 +12,7 @@ class FavoriteManager(models.Manager):
         """ Returns Favorites for a specific user
         """
         return self.get_query_set().filter(user=user)
-    
+
     def favorites_for_model(self, model, user=None):
         """ Returns Favorites for a specific model
         """
@@ -77,6 +78,7 @@ class FavoriteManager(models.Manager):
         favorite.save()
         return favorite
 
+
 class Favorite(models.Model):
     user = models.ForeignKey(User)
     content_type = models.ForeignKey(ContentType)
@@ -84,22 +86,22 @@ class Favorite(models.Model):
     content_object = generic.GenericForeignKey('content_type', 'object_id')
 
     created_on = models.DateTimeField(auto_now_add=True)
-    
+
     objects = FavoriteManager()
 
     class Meta:
         verbose_name = _('favorite')
         verbose_name_plural = _('favorites')
         unique_together = (('user', 'content_type', 'object_id'),)
-    
+
     def __unicode__(self):
         return "%s likes %s" % (self.user, self.content_object)
+
 
 def remove_favorites(sender, **kwargs):
     instance = kwargs.get('instance')
     # Solves the session pk issue.
     if isinstance(instance.pk, int):
         Favorite.objects.favorites_for_object(instance).delete()
-    
+
 models.signals.post_delete.connect(remove_favorites)
-    
