@@ -119,20 +119,17 @@ def create_favorite(request, default_redirect='/'):
 
 
 @login_required
-def favorite_list(request, model_class, **kwargs):
+def favorite_list_for_model_class(request, model_class, **kwargs):
     """
     Generic `favorites list` view based on generic object_list
 
     `model_class` - required valid model class
-    `template_name` - default is "favorites/favorite_list.html"
-                      used by generic object_list view
 
     Other parameters are same as object_list.
 
     Example of usage (urls.py):
         url(r'favorites/my_model/$',
             'favorites.views.favorite_list', kwargs={
-                'template_name': 'favorites/mymodel_list.html',
                 'model_class': get_model('my_app.MyModel'),
                 'paginate_by': 25,
             }, name='favorites-mymodel')
