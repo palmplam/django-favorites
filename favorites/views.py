@@ -67,7 +67,7 @@ def create_favorite_confirmation(request,
                                  redirect_to=None):
     model = get_model(app_label, object_name)
     content_type = ContentType.objects.get_for_model(model)
-    obj = get_object_or_404(model, pk=object_id)
+    obj = content_type.get_object_for_this_type(pk=object_id)
 
     if not Favorite.objects.filter(content_type=content_type,
                                    object_id=object_id,
@@ -76,7 +76,7 @@ def create_favorite_confirmation(request,
     if redirect_to:
         return redirect(redirect_to)
     else:
-        return(request.META.get('HTTP_REFERER', 'favorites'))
+        return redirect(request.META.get('HTTP_REFERER', 'favorites'))
 
 
 @login_required
