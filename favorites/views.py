@@ -5,12 +5,14 @@ from django.contrib.contenttypes.models import ContentType
 from django.template import RequestContext
 from django.db.models import get_model
 from django.http import HttpResponse
+from django.http import HttpResponseBadRequest
 from django.utils import simplejson
+from django.core.urlresolvers import reverse
 
 from models import Favorite
 
-from forms import DeleteFavoriteForm
-
+from favorites.forms import DeleteFavoriteForm
+from favorites.forms import CreateFavoriteHiddenForm
 
 
 @login_required
@@ -61,22 +63,59 @@ def ajax_remove_favorite(request):
 
 @login_required
 def create_favorite_confirmation(request,
-                                 object_id,
                                  app_label,
                                  object_name,
-                                 redirect_to=None):
+                                 object_id):
     model = get_model(app_label, object_name)
     content_type = ContentType.objects.get_for_model(model)
     obj = content_type.get_object_for_this_type(pk=object_id)
 
-    if not Favorite.objects.filter(content_type=content_type,
-                                   object_id=object_id,
-                                   user=request.user):
-        Favorite.objects.create_favorite(obj, request.user)
-    if redirect_to:
-        return redirect(redirect_to)
-    else:
-        return redirect(request.META.get('HTTP_REFERER', 'favorites'))
+    if Favorite.objects.filter(content_type=content_type,
+                               object_id=object_id,
+                               user=request.user):
+        # FIXME: it's already a favorite what should we do ? (amirouche)
+        pass
+
+    initial = {'app_label': app_label,
+               'object_name': object_name,
+               'object_id': object_id}
+    form = CreateFavoriteHiddenForm(initial=initial)
+
+    ctx = RequestContext(request, {'form': form, 'object': obj})
+
+    return render_to_response('favorites/confirm_favorite.html', ctx)
+
+
+@login_required
+def create_favorite(request, default_redirect='/'):
+    if request.method == 'POST':
+        form  = CreateFavoriteHiddenForm(request.POST)
+        if form.is_valid():
+            app_label = form.cleaned_data['app_label']
+            object_name = form.cleaned_data['object_name']
+            object_id = form.cleaned_data['object_id']
+
+            model = get_model(app_label, object_name)
+            content_type = ContentType.objects.get_for_model(model)
+            obj = content_type.get_object_for_this_type(pk=object_id)
+
+            if not Favorite.objects.filter(content_type=content_type,
+                                           object_id=object_id,
+                                           user=request.user):
+                Favorite.objects.create_favorite(obj, request.user)
+            try:
+                return redirect(request.GET['next'])
+            except:
+                return redirect(default_redirect)
+
+        else:
+            args = (form.cleaned_data['app_label'],
+                    form.cleaned_data['object_name'],
+                    form.cleaned_data['object_id'])
+
+            url = reverse('add-to-favorites-confirmation', args=args)
+            return redirect(url)
+    return HttpResponseBadRequest()  # FIXME : is it good ? (amirouche)
 
 
 @login_required
