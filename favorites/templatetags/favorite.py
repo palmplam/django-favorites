@@ -107,6 +107,12 @@ def do_favorite_entry_for_item(parser, token):
     return FavoriteEntryForItemNode(bits[1], bits[3], bits[5])
 register.tag('favorite_entry_for_item', do_favorite_entry_for_item)
 
-@register.simpletags
-def url_add_to_favorite_confirmation(view_name, *args):
-    return URLNode(view_name, args, [], [])
+
+@register.simple_tag(takes_context=True)
+def url_add_to_favorites_confirmation(context, object):
+    view_name = 'add-to-favorites-confirmation'
+    args = (object._meta.app_label, object._meta.object_name, object.pk)
+    return reverse(view_name,
+                   args=args,
+                   kwargs=[],
+                   current_app=context.current_app)
