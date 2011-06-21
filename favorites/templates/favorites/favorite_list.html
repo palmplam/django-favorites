@@ -1,0 +1,10 @@
+<h1>Your favorites</h1>
+{% if object_list %}
+    <ul>
+{% for object in object_list %}
+    <li>{{object}}</li>
+{% endfor %}
+</ul>
+{% else %}
+   <p>You have no favorites you are not a socialite !</p>
+{% endif %}
