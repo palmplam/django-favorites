@@ -1,5 +1,5 @@
 <h1>Add <i>{{ object }}</i> to favorites</h1>
-<form method="POST" action="{% url create-favorite %}">
+<form method="POST" action="{% url create-favorite %}{% if next %}?next={{next}}{% endif %}">
   {% csrf_token %}{% for field in form %}{{field}}{% endfor %}
 <input type=submit />  
 </form>

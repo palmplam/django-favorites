@@ -28,7 +28,8 @@ def list_folder(request):
     object_list = Folder.objects.filter(user=request.user)
     return render_to_response('favorites/folder_list.html', 
                               RequestContext(request, {'object_list': object_list}))
-    
+
+
 @login_required
 def create_folder(request):
     if request.method == 'POST':
@@ -105,17 +106,15 @@ def create_favorite_confirmation(request,
     content_type = ContentType.objects.get_for_model(model)
     obj = content_type.get_object_for_this_type(pk=object_id)
 
-    object = get_object_for_this_type(Favorite,
-                                      content_type=content_type,
-                                      object_id=object_id,
-                                      user=request.user)
+    object = content_type.get_object_for_this_type(pk=object_id)
 
     initial = {'app_label': app_label,
                'object_name': object_name,
                'object_id': object_id}
     form = CreateFavoriteHiddenForm(initial=initial)
 
-    ctx = RequestContext(request, {'form': form, 'object': obj})
+    ctx = {'form': form, 'object': obj, 'next':request.GET.get('next', '/')}
+    ctx = RequestContext(request, ctx)
     return render_to_response('favorites/confirm_favorite.html', ctx)
 
 
@@ -140,8 +139,8 @@ def create_favorite(request):
                                            object_id=object_id,
                                            user=request.user):
                 Favorite.objects.create_favorite(obj, request.user)
-                return redirect(request.GET.get('next', '/'))
-    return HttpResponseBadRequest
+            return redirect(request.GET.get('next', '/'))
+    return HttpResponseBadRequest()
 
 
 @login_required
