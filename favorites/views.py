@@ -14,7 +14,6 @@ from django.core.urlresolvers import reverse
 from favorites.models import Favorite
 from favorites.models import Folder
 
-from favorites.forms import ObjectHiddenForm
 from favorites.forms import ObjectIdForm
 from favorites.forms import FolderForm
 from favorites.forms import CreateFavoriteForm
