@@ -257,8 +257,12 @@ def move_favorite(request, object_id):
             favorite.folder = folder
             favorite.save()
             return redirect(request.GET.get('next', '/'))
-    print form.errors
-    form = UpdateFavoriteForm(initial={'folder': favorite.folder.pk,
+    if favorite.folder is None:
+        folder_id = 0
+    else:
+        folder_id = favorite.folder.pk
+
+    form = UpdateFavoriteForm(initial={'folder': folder_id,
                                        'object_id': favorite.pk})
     user_folders = [(0, '')]
     user_folders.extend(Folder.objects.filter(user=request.user).order_by('name').values_list('pk', 'name'))
