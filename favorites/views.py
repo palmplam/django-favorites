@@ -108,12 +108,11 @@ def create_favorite_confirmation(request,
     initial = {'app_label': app_label,
                'object_name': object_name,
                'object_id': object_id}
-    form = CreateFavoriteForm(initial=initial)
+    choices = [(0, '')]
+    choices.extend(Folder.objects.filter(user=request.user).order_by('name').values_list('pk', 'name'))
 
-    user_folders = [(0, '')]
-    user_folders.extend(Folder.objects.filter(user=request.user).order_by('name').values_list('pk', 'name'))
-    
-    form.fields['folder'].choices = user_folders
+    form = CreateFavoriteForm(choices=choices ,initial=initial)
+
     ctx = {'form': form, 'object': object, 'next':request.GET.get('next', '/')}
     ctx = RequestContext(request, ctx)
     return render_to_response('favorites/confirm_favorite.html', ctx)
@@ -126,11 +125,10 @@ def create_favorite(request):
     bad request error. If the validation succeed the favorite is added
     to user profile and a redirection is returned"""
     if request.method == 'POST':
-        form = CreateFavoriteForm(request.POST)
-        user_folders = [(0, '')]
-        user_folders.extend(Folder.objects.filter(user=request.user).order_by('name').values_list('pk', 'name'))
-    
-        form.fields['folder'].choices = user_folders
+        choices = [(0, '')]
+        choices.extend(Folder.objects.filter(user=request.user).order_by('name').values_list('pk', 'name'))
+
+        form = CreateFavoriteForm(choices=choices, data=request.POST)
 
         if form.is_valid():
             app_label = form.cleaned_data['app_label']
@@ -154,8 +152,6 @@ def create_favorite(request):
                                                  request.user,
                                                  folder)
             return redirect(request.GET.get('next', '/'))
-        else:
-            print form.errors
     return HttpResponseBadRequest()
 
 
@@ -228,9 +224,9 @@ def delete_favorite_confirmation(request, object_id):
     current user"""
     favorite = get_object_or_404(Favorite, pk=object_id)
     object = favorite.content_object
-    
+
     form = ObjectIdForm(initial={'object_id': favorite.pk})
-    
+
     ctx = {'form': form, 'object': object, 'next': request.GET.get('next', '/')}
     ctx = RequestContext(request, ctx)
     return render_to_response('favorites/confirm_favorite_delete.html', ctx)    
@@ -272,3 +268,46 @@ def move_favorite(request, object_id):
     ctx = {'form': form, 'object': favorite, 'next': request.GET.get('next', '/')}
     ctx = RequestContext(request, ctx)
     return render_to_response('favorites/favorite_move.html', ctx)
+
+
+def  content_type_list(request, app_label, object_name):
+    model = get_model(app_label, object_name)
+    content_type = ContentType.objects.get_for_model(model)
+
+    favorites = Favorite.objects.filter(content_type=content_type,
+                                        user=request.user)
+    ctx = {'object_list': favorites,
+           'model': model}
+    ctx = RequestContext(request, ctx)
+
+    custom_template = 'favorites/list_favorites_%s_%s.html' % (app_label,
+                                                               object_name)
+
+    return render_to_response([custom_template,
+                               'favorites/list_favorites_content_type.html'],
+                              ctx)
+
+
+def content_type_by_folder_list(request, app_label, object_name, folder_id):
+    model = get_model(app_label, object_name)
+    content_type = ContentType.objects.get_for_model(model)
+
+    folder = get_object_or_404(Folder, pk=folder_id)
+
+    if not folder.user == request.user:
+        return HttpResponseForbidden()
+
+    favorites = Favorite.objects.filter(content_type=content_type,
+                                        user=request.user,
+                                        folder=folder)
+    ctx = {'object_list': favorites,
+           'model': model,
+           'folder': folder}
+    ctx = RequestContext(request, ctx)
+
+    custom_template = 'favorites/list_favorites_%s_%s_by_folder.html' % (app_label,
+                                                               object_name)
+
+    return render_to_response([custom_template,
+                               'favorites/list_favorites_content_type_by_folder.html'],
+                              ctx)

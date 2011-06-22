@@ -28,7 +28,10 @@ class CreateFavoriteForm(ObjectHiddenForm):
     """Form to confirm favorite creation"""
     folder = forms.ChoiceField(required=True)
 
+    def __init__(self, choices, **kwargs):
+        forms.Form.__init__(self, **kwargs)
+        self.fields['folder'].choices = choices
+
 
 class UpdateFavoriteForm(ObjectIdForm):
     folder = forms.ChoiceField(required=True)
-    
