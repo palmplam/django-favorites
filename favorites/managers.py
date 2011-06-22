@@ -1,7 +1,9 @@
 from django.db import models, connection
 from django.contrib.contenttypes.models import ContentType
 
+
 qn = connection.ops.quote_name
+
 
 class FavoritesManagerMixin(object):
     """ A Mixin to add a `favorite__favorite` column via extra 

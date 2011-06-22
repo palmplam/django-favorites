@@ -117,3 +117,13 @@ def url_add_to_favorites_confirmation(context, object):
                    args=args,
                    kwargs=[],
                    current_app=context.current_app)
+
+
+@register.simple_tag(takes_context=True)
+def url_delete_from_favorites_confirmation(context, object):
+    view_name = 'delete-from-favorites-confirmation-for-object'
+    args = (object._meta.app_label, object._meta.object_name, object.pk)
+    return reverse(view_name,
+                   args=args,
+                   kwargs=[],
+                   current_app=context.current_app)
