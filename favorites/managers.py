@@ -100,14 +100,15 @@ class FavoriteManager(models.Manager):
                                     user=user, object_id=obj.pk)
 
     @classmethod
-    def create_favorite(cls, content_object, user):
+    def create_favorite(cls, content_object, user, folder=None):
         content_type = ContentType.objects.get_for_model(type(content_object))
         Favorite = models.get_model('favorites', 'Favorite')
         favorite = Favorite(
             user=user,
             content_type=content_type,
             object_id=content_object.pk,
-            content_object=content_object
+            content_object=content_object,
+            folder = folder
             )
         favorite.save()
         return favorite

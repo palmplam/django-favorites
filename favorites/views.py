@@ -17,6 +17,7 @@ from favorites.models import Folder
 from favorites.forms import ObjectHiddenForm
 from favorites.forms import ObjectIdForm
 from favorites.forms import FolderForm
+from favorites.forms import FavoriteForm
 
 
 ### FOLDER VIEWS ##############################################################
@@ -107,8 +108,12 @@ def create_favorite_confirmation(request,
     initial = {'app_label': app_label,
                'object_name': object_name,
                'object_id': object_id}
-    form = ObjectHiddenForm(initial=initial)
+    form = FavoriteForm(initial=initial)
 
+    user_folders = [(0, '')]
+    user_folders.extend(Folder.objects.filter(user=request.user).order_by('name').values_list('pk', 'name'))
+    
+    form.fields['folder'].choices = user_folders
     ctx = {'form': form, 'object': object, 'next':request.GET.get('next', '/')}
     ctx = RequestContext(request, ctx)
     return render_to_response('favorites/confirm_favorite.html', ctx)
@@ -121,11 +126,22 @@ def create_favorite(request):
     bad request error. If the validation succeed the favorite is added
     to user profile and a redirection is returned"""
     if request.method == 'POST':
-        form  = ObjectHiddenForm(request.POST)
+        form = FavoriteForm(request.POST)
+        user_folders = [(0, '')]
+        user_folders.extend(Folder.objects.filter(user=request.user).order_by('name').values_list('pk', 'name'))
+    
+        form.fields['folder'].choices = user_folders
+
         if form.is_valid():
             app_label = form.cleaned_data['app_label']
             object_name = form.cleaned_data['object_name']
             object_id = form.cleaned_data['object_id']
+
+            folder_id = form.cleaned_data['folder']
+            if folder_id == 0:
+                folder = None
+            else:
+                folder = get_object_or_404(Folder, pk=folder_id)
 
             model = get_model(app_label, object_name)
             content_type = ContentType.objects.get_for_model(model)
@@ -134,8 +150,12 @@ def create_favorite(request):
             if not Favorite.objects.filter(content_type=content_type,
                                            object_id=object_id,
                                            user=request.user):
-                Favorite.objects.create_favorite(obj, request.user)
+                Favorite.objects.create_favorite(obj, 
+                                                 request.user,
+                                                 folder)
             return redirect(request.GET.get('next', '/'))
+        else:
+            print form.errors
     return HttpResponseBadRequest()
 
 

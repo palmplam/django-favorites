@@ -2,7 +2,7 @@
 {% if object_list %}
     <ul>
 {% for object in object_list %}
-    <li>{{object}} [<a href="{% url delete-favorite-confirmation object.pk %}?next={% url favorites %}">remove</a>]</li>
+    <li>{{object}}{% if object.folder %}@{{object.folder}}{% endif %} [<a href="{% url delete-favorite-confirmation object.pk %}?next={% url favorites %}">remove</a>]</li>
 {% endfor %}
 </ul>
 {% else %}

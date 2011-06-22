@@ -6,6 +6,15 @@ class ObjectIdForm(forms.Form):
     object_id = forms.IntegerField(widget=forms.HiddenInput())
 
 
+class ObjectHiddenForm(forms.Form):
+    """Form to confirm favorite creation"""
+    app_label = forms.CharField(max_length=100,
+                                widget=forms.HiddenInput())
+    object_name = forms.CharField(max_length=100,
+                                  widget=forms.HiddenInput())
+    object_id = forms.IntegerField(widget=forms.HiddenInput())
+
+
 ### FOLDER FORMS ###########################################################
 
 
@@ -15,11 +24,12 @@ class FolderForm(forms.Form):
 
 ### FAVORITE FORMS #########################################################
 
-
-class ObjectHiddenForm(forms.Form):
+class FavoriteForm(ObjectHiddenForm):
     """Form to confirm favorite creation"""
     app_label = forms.CharField(max_length=100,
                                 widget=forms.HiddenInput())
     object_name = forms.CharField(max_length=100,
                                   widget=forms.HiddenInput())
     object_id = forms.IntegerField(widget=forms.HiddenInput())
+
+    folder = forms.ChoiceField(required=True)

@@ -11,6 +11,9 @@ class Folder(models.Model):
     user = models.ForeignKey(User)
     name = models.CharField(max_length=100)
 
+    def __unicode__(self):
+        return self.name
+
 
 class Favorite(models.Model):
     user = models.ForeignKey(User)
