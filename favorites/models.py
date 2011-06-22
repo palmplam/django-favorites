@@ -19,7 +19,7 @@ class Favorite(models.Model):
     user = models.ForeignKey(User)
 
     content_type = models.ForeignKey(ContentType)
-    object_id = models.IntegerField(_('object ID'))
+    object_id = models.PositiveIntegerField()
     content_object = generic.GenericForeignKey('content_type', 'object_id')
 
     folder = models.ForeignKey(Folder, null=True)
