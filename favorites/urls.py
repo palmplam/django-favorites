@@ -25,6 +25,9 @@ urlpatterns = patterns("",
                        url(r'^favorite/add/',
                            'favorites.views.create_favorite',
                            name='create-favorite'),
+                       url(r'^favorite/move/(?P<object_id>\d+)',
+                           'favorites.views.move_favorite',
+                           name='move-favorite'),
 
                        # folders urls
                        url('folders/',
