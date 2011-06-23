@@ -93,6 +93,14 @@ def delete_folder(request):
 
 
 @login_required
+def list_favorites(request):
+    object_list = Favorite.objects.favorites_for_user(request.user)
+    ctx = {'object_list': object_list}
+    ctx = RequestContext(request, ctx)
+    return render_to_response('favorites/favorite_list.html', ctx)
+
+
+@login_required
 def create_favorite_confirmation(request,
                                  app_label,
                                  object_name,

@@ -9,7 +9,7 @@ from favorites.models import Folder
 urlpatterns = patterns("",
                        # favorites urls
                        url(r'^favorites/$',
-                           ListView.as_view(queryset = Favorite.objects.all()),
+                           'favorites.views.list_favorites',
                            name='favorites'),
 
                        # add
