@@ -25,8 +25,8 @@ from favorites.forms import UpdateFavoriteForm
 @login_required
 def list_folder(request):
     object_list = Folder.objects.filter(user=request.user)
-    return render_to_response('favorites/folder_list.html', 
-                              RequestContext(request, {'object_list': object_list}))
+    ctx = RequestContext(request, {'object_list': object_list})
+    return render_to_response('favorites/folder_list.html', ctx)
 
 
 @login_required
@@ -110,6 +110,8 @@ def create_favorite_confirmation(request,
     creation. It raise a 404 exception if there is not such object."""
 
     model = get_model(app_label, object_name)
+    if model is None:
+        return HttpResponseNotFound()
     object = get_object_or_404(model, pk=object_id)
 
     initial = {'app_label': app_label,
@@ -155,7 +157,7 @@ def create_favorite(request):
             if not Favorite.objects.filter(content_type=content_type,
                                            object_id=object_id,
                                            user=request.user):
-                Favorite.objects.create_favorite(obj, 
+                Favorite.objects.create_favorite(obj,
                                                  request.user,
                                                  folder)
             return redirect(request.GET.get('next', '/'))

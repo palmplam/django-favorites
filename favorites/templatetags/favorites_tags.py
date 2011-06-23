@@ -8,6 +8,7 @@ from django.template import Variable
 from django.utils.translation import ugettext_lazy as _
 from django.template.defaulttags import URLNode
 
+from favorites.models import Favorite
 
 register = template.Library()
 
@@ -17,7 +18,6 @@ def is_favorite(object, user):
     """
     Returns True, if object is already in user`s favorite list
     """
-    Favorite = models.get_model('favorites', 'Favorite')
     if not user or not user.is_authenticated():
         return False
     query = Favorite.objects.favorites_for_object(object, user)

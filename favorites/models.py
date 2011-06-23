@@ -34,7 +34,8 @@ class Favorite(models.Model):
         unique_together = (('user', 'content_type', 'object_id'),)
 
     def __unicode__(self):
-        return "%s likes %s" % (self.user, self.content_object)
+        object_repr = unicode(self.content_object)
+        return u"%s likes %s" % (self.user, object_repr)
 
 
 def remove_favorites(sender, **kwargs):
