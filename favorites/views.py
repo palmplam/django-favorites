@@ -239,7 +239,7 @@ def move_favorite(request, object_id):
     """Renders a formular to move a favorite to another folder"""
     favorite = get_object_or_404(Favorite, pk=object_id)
     if not favorite.user == request.user:
-        return HttpResponseBadRequest()
+        return HttpResponseForbidden()
 
     if request.method == 'POST':
         form = UpdateFavoriteForm(request.POST)
@@ -254,6 +254,8 @@ def move_favorite(request, object_id):
                 folder = None
             else:
                 folder = get_object_or_404(Folder, pk=folder_id)
+                if not folder.user == request.user:
+                    return HttpResponseForbidden()
             favorite.folder = folder
             favorite.save()
             return redirect(request.GET.get('next', '/'))
