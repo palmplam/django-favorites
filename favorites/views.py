@@ -255,7 +255,7 @@ def move_favorite(request, object_id):
                 folder = None
             else:
                 folder = get_object_or_404(Folder, pk=folder_id)
-           favorite.folder = folder
+            favorite.folder = folder
             favorite.save()
             return redirect(request.GET.get('next', '/'))
     if favorite.folder is None:
