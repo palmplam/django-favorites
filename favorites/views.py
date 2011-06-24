@@ -234,6 +234,7 @@ def delete_favorite_confirmation(request, object_id):
     ctx = {'form': form, 'object': object, 'next': request.GET.get('next', '/')}
     ctx = RequestContext(request, ctx)
     return render_to_response('favorites/confirm_favorite_delete.html', ctx)    
+
 @login_required
 def move_favorite(request, object_id):
     """Renders a formular to move a favorite to another folder"""
@@ -254,9 +255,7 @@ def move_favorite(request, object_id):
                 folder = None
             else:
                 folder = get_object_or_404(Folder, pk=folder_id)
-                if not folder.user == request.user:
-                    return HttpResponseForbidden()
-            favorite.folder = folder
+           favorite.folder = folder
             favorite.save()
             return redirect(request.GET.get('next', '/'))
     if favorite.folder is None:
