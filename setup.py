@@ -3,10 +3,8 @@ import os
 
 
 modules = [
-    'favorites.migrations',
     'favorites.templatetags',
     'favorites.templates.favorites',
-    'favorites.templatetags',
 ]
 
 
