@@ -157,7 +157,7 @@ def create_favorite(request):
             try:
                 content_type = ContentType.objects.get_for_model(model)
             except AttributeError: # there no such model
-                return HttpResponseBadRequest()
+                return HttpResponseNotFound()
             obj = content_type.get_object_for_this_type(pk=object_id)
 
             if not Favorite.objects.filter(content_type=content_type,
@@ -216,13 +216,17 @@ def delete_favorite_confirmation_for_object(request,
     object represented by `app_label`, `object_name` and `object_id`.
     It raise a 404 exception if there is not such object."""
     model = get_model(app_label, object_name)
-    object = get_object_or_404(model, pk=object_id)
+    try:
+        object = get_object_or_404(model, pk=object_id)
+    except AttributeError: # the model does not exists
+        return HttpResponseNotFound()
+
     query = Favorite.objects.favorites_for_object(object, request.user)
 
     try:
         favorite = query[0]
     except:
-        raise HttpResponseNotFound()
+        return HttpResponseNotFound()
 
     form = ObjectIdForm(initial={'object_id': favorite.pk})
 
@@ -286,8 +290,11 @@ def move_favorite(request, object_id):
     return render_to_response('favorites/favorite_move.html', ctx)
 
 
-def  content_type_list(request, app_label, object_name):
+@login_required
+def content_type_list(request, app_label, object_name):
     model = get_model(app_label, object_name)
+    if model is None:
+        return HttpResponseNotFound()
     content_type = ContentType.objects.get_for_model(model)
 
     favorites = Favorite.objects.filter(content_type=content_type,
@@ -303,9 +310,11 @@ def  content_type_list(request, app_label, object_name):
                                'favorites/list_favorites_content_type.html'],
                               ctx)
 
-
+@login_required
 def content_type_by_folder_list(request, app_label, object_name, folder_id):
     model = get_model(app_label, object_name)
+    if model is None:
+        return HttpResponseNotFound()
     content_type = ContentType.objects.get_for_model(model)
 
     folder = get_object_or_404(Folder, pk=folder_id)

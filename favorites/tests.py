@@ -14,6 +14,10 @@ class DummyModel(models.Model):
     pass
 
 
+class BarModel(models.Model):
+    pass
+
+
 class BaseFavoritesTestCase(TestCase):
     urls = 'favorites.urls'
 
@@ -247,6 +251,7 @@ class FavoriteListTests(BaseFavoritesTestCase):
         godzilla = self.user('godzilla')
         self.client.login(username='godzilla', password='godzilla')
         dummy = DummyModel()
+        dummy.save()
         Favorite.objects.create_favorite(dummy, leviathan)
         response = self.client.get('/favorites/')
         self.assertEquals(response.status_code, 200)
@@ -344,7 +349,7 @@ class AddFavoriteTests(BaseFavoritesTestCase):
         dummy.delete()
         leviathan.delete()
 
-    def test_bad_object(self):
+    def test_bad_model(self):
         godzilla = self.user('godzilla')
         self.client.login(username='godzilla', password='godzilla')
         response = self.client.post('/favorite/add/', 
@@ -352,7 +357,7 @@ class AddFavoriteTests(BaseFavoritesTestCase):
                                      'object_name': 'bar',
                                      'object_id': 123,
                                      'folder': 0})
-        self.assertEquals(response.status_code, 400)
+        self.assertEquals(response.status_code, 404)
         godzilla.delete()
 
 
@@ -413,9 +418,191 @@ class DeleteFavoriteTests(BaseFavoritesTestCase):
         godzilla.delete()
 
 
-class DeleteFavoriteForObject(BaseFavoritesTestCase):
+class DeleteFavoriteForObjectConfirmation(BaseFavoritesTestCase):
     """Tests for delete-favorites-confirmation-for-object"""
-    pass
+    def test_login_required(self):
+        """the url is available only to logged user"""
+        response = self.client.get('/favorite/delete/foo/bar/123')
+        self.assertEquals(response.status_code, 302)
+
+    def test_model_does_not_exists(self):
+        """should return 404 error if the model does not exists"""
+        godzilla = self.user('godzilla')
+        self.client.login(username='godzilla', password='godzilla')
+        response = self.client.get('/favorite/delete/foo/bar/123')
+        self.assertEquals(response.status_code, 404)
+        godzilla.delete()
+
+    def test_object_does_not_exists(self):
+        """should return 404 error if the object does not exists"""
+        godzilla = self.user('godzilla')
+        self.client.login(username='godzilla', password='godzilla')
+        response = self.client.get('/favorite/delete/favorites/dummymodel/123')
+        self.assertEquals(response.status_code, 404)
+        godzilla.delete()
+
+    def test_favorite_does_not_exists(self):
+        """should return 404 error if there's not favorite for this
+        object"""
+        godzilla = self.user('godzilla')
+        dummy = DummyModel()
+        dummy.save()
+        self.client.login(username='godzilla', password='godzilla')
+        response = self.client.get('/favorite/delete/favorites/dummymodel/%s' % dummy.pk)
+        self.assertEquals(response.status_code, 404)
+        godzilla.delete()
+
+    def test_good_request(self):
+        """should return 200, with the pk of the related favorite
+        in the context"""
+        godzilla = self.user('godzilla')
+        dummy = DummyModel()
+        dummy.save()
+        favorite = Favorite.objects.create_favorite(dummy, godzilla)
+        self.client.login(username='godzilla', password='godzilla')
+        response = self.client.get('/favorite/delete/favorites/dummymodel/%s' % dummy.pk)
+        self.assertEquals(response.status_code, 200)
+        self.assertIsNotNone(response.context.get('form', None))
+        self.assertIsNotNone(response.context['form'].fields.get('object_id', None))
+        # FIXME: check that the initial value is folder.pk
+        self.assertIsNotNone(response.context.get('object', None))
+        self.assertIsNotNone(response.context['object'].pk, favorite.pk)
+        godzilla.delete()
+        dummy.delete()
+        favorite.delete()
+
+
+class DeleteFavoriteConfirmation(BaseFavoritesTestCase):
+    """Tests for delete-favorite-confirmation url"""
+    def test_login_required(self):
+        """Should return 302 if the user is not logged in."""
+        response = self.client.get('/favorite/delete/123')
+        self.assertEquals(response.status_code, 302)
+
+    def test_object_not_found(self):
+        """Should return 404 if there is no such favorite."""
+        godzilla = self.user('godzilla')
+        self.client.login(username='godzilla', password='godzilla')
+        response = self.client.get('/favorite/delete/123')
+        self.assertEquals(response.status_code, 404)
+        godzilla.delete()
+
+    def test_good_request(self):
+        """Should return a page that show up a form to validate
+        deletion"""
+        godzilla = self.user('godzilla')
+        self.client.login(username='godzilla', password='godzilla')
+        dummy = DummyModel()
+        dummy.save()
+        favorite = Favorite.objects.create_favorite(dummy, godzilla)
+        response = self.client.get('/favorite/delete/%s' % favorite.pk)
+        self.assertEquals(response.status_code, 200)
+        self.assertIsNotNone(response.context.get('form', None))
+        self.assertIsNotNone(response.context['form'].fields.get('object_id', None))
+        # FIXME: Check that the form has the good object_id
+        self.assertIsNotNone(response.context.get('object', None))
+        self.assertEquals(response.context['object'].pk, favorite.pk)
+        godzilla.delete()
+        dummy.delete()
+        favorite.delete()
+
+
+class FavoriteContentTypeList(BaseFavoritesTestCase):
+    """tests for favorites.views.content_type_list url"""
+    def test_login_required(self):
+        response = self.client.get('/favorite/bar/foo/')
+        self.assertEquals(response.status_code, 302)
+
+    def test_only_users_favorites(self):
+        """should only list user's favorites"""
+        # setup
+        godzilla = self.user('godzilla')
+        leviathan = self.user('leviathan')
+        self.client.login(username='godzilla', password='godzilla')
+        def create_object_n_favorite(user, folder=None):
+            dummy = DummyModel()
+            dummy.save()
+            favorite = Favorite.objects.create_favorite(dummy, user, folder)
+            return dummy, favorite
+        godzilla_objects =  []
+        godzilla_favorite_pks = []
+        for i in range(5):
+            object, favorite = create_object_n_favorite(godzilla)
+            godzilla_objects.append((object, favorite))
+            godzilla_favorite_pks.append(favorite.pk)
+        japan = Folder(name='japan', user=godzilla)
+        japan.save()
+        for i in range(5):
+            object, favorite = create_object_n_favorite(godzilla, japan)
+            godzilla_objects.append((object, favorite))
+            godzilla_favorite_pks.append(favorite.pk)
+        leviathan_objects = []
+        for i in range(5):
+            leviathan_objects.append(create_object_n_favorite(leviathan))
+
+        # tests
+        response = self.client.get('/favorite/favorites/dummymodel/')
+        self.assertEquals(response.status_code, 200)
+        self.assertIsNotNone(response.context['object_list'])
+        for object in response.context['object_list']:
+            self.assertIn(object.pk, godzilla_favorite_pks)
+
+        # teardown
+        for objects in (leviathan_objects, godzilla_objects):
+            for object, favorite in objects:
+                object.delete()
+                favorite.delete()
+        godzilla.delete()
+        leviathan.delete()
+
+    def test_only_content_type_favorites(self):
+        """should only list content type favorites"""
+        # setup
+        godzilla = self.user('godzilla')
+        leviathan = self.user('leviathan')
+        self.client.login(username='godzilla', password='godzilla')
+        def create_object_n_favorite(model, user):
+            dummy = model()
+            dummy.save()
+            favorite = Favorite.objects.create_favorite(dummy, user)
+            return dummy, favorite
+        godzilla_objects =  []
+        godzilla_dummymodel_favorite_pks = []
+        for i in range(5):
+            object, favorite = create_object_n_favorite(DummyModel, godzilla)
+            godzilla_dummymodel_favorite_pks.append(favorite.pk)
+            godzilla_objects.append((object, favorite))
+
+        for i in range(5):
+            object, favorite = create_object_n_favorite(BarModel, godzilla)
+            godzilla_objects.append((object, favorite))
+
+        # tests
+        response = self.client.get('/favorite/favorites/dummymodel/')
+        self.assertEquals(response.status_code, 200)
+        self.assertIsNotNone(response.context['object_list'])
+        for object in response.context['object_list']:
+            self.assertIn(object.pk, godzilla_dummymodel_favorite_pks)
+
+        # teardown
+        for object, favorite in godzilla_objects:
+            object.delete()
+            favorite.delete()
+        godzilla.delete()
+
+
+    def test_bad_content_type(self):
+        """should return 404 if content type is unknown"""
+        # setup
+        godzilla = self.user('godzilla')
+        leviathan = self.user('leviathan')
+        self.client.login(username='godzilla', password='godzilla')
+
+        # tests
+        response = self.client.get('/favorite/favorites/foo/')
+        self.assertEquals(response.status_code, 404)
+
+        godzilla.delete()
 
 
 class MoveFavoriteTests(BaseFavoritesTestCase):
@@ -556,6 +743,91 @@ class MoveFavoriteTests(BaseFavoritesTestCase):
         godzilla.delete()
         dummy.delete()
 
+
+class ContentTypeByFolderList(BaseFavoritesTestCase):
+    def test_login_required(self):
+        response = self.client.get('/favorite/foo/bar/folder/1')
+        self.assertEquals(response.status_code, 302)
+
+    def test_invalid_model(self):
+        """if we try to list favorites for a model that does not 
+        exists the server should return a 404 error"""
+        godzilla = self.user('godzilla')
+        self.client.login(username='godzilla', password='godzilla')
+        response = self.client.get('/favorite/foo/bar/folder/1')
+        self.assertEquals(response.status_code, 404)
+        godzilla.delete()
+
+    def test_invalid_folder(self):
+        """if we try to list favorites from a folder that does exists
+        the server should return a 404 error"""
+        godzilla = self.user('godzilla')
+        self.client.login(username='godzilla', password='godzilla')
+        response = self.client.get('/favorite/favorites/dummymodel/folder/0')
+        self.assertEquals(response.status_code, 404)
+        godzilla.delete()
+
+    def test_permission_folder(self):
+        """if we try to list favorites from a folder that the
+        user doesn't own the server should return a 403 error"""
+        godzilla = self.user('godzilla')
+        leviathan = self.user('leviathan')
+        folder = Folder(name='china', user=leviathan)
+        folder.save()
+        self.client.login(username='godzilla', password='godzilla')
+        response = self.client.get('/favorite/favorites/dummymodel/folder/%s' % folder.pk)
+        self.assertEquals(response.status_code, 403)
+        godzilla.delete()
+        leviathan.delete()
+        folder.delete()
+
+    def test_valid_request(self):
+        """if the request is valid (valid url), we should list
+        all the favorites from the target folder (and only them)"""
+        godzilla = self.user('godzilla')
+        japan = Folder(name='japan', user=godzilla)
+        japan.save()
+        china = Folder(name='china', user=godzilla)
+        china.save()
+
+        def create_favorites(model, folder):
+            m = model()
+            m.save()
+            favorite = Favorite.objects.create_favorite(m, godzilla, folder)
+            return m, favorite
+
+        japan_folder_pks = []
+        objects = []
+        for _ in range(5):
+            object, favorite = create_favorites(DummyModel, japan)
+            japan_folder_pks.append(favorite.pk)
+            objects.append((object, favorite))
+
+        for _ in range(5):
+            object, favorite = create_favorites(DummyModel, china)
+            objects.append((object, favorite))
+
+        for _ in range(5):
+            object, favorite = create_favorites(BarModel, japan)
+            objects.append((object, favorite))
+
+        for _ in range(5):
+            object, favorite = create_favorites(BarModel, china)
+            objects.append((object, favorite))
+
+        self.client.login(username='godzilla', password='godzilla')
+        response = self.client.get('/favorite/favorites/dummymodel/folder/%s' % japan.pk)
+        self.assertEquals(response.status_code, 200)
+        self.assertIsNotNone(response.context['object_list'])
+        for object in response.context['object_list']:
+            self.assertIn(object.pk, japan_folder_pks)
+
+        godzilla.delete()
+        for object in objects:
+            object[0].delete()
+            object[1].delete()
+        japan.delete()
+        china.delete()
 
 """
 class AnimalManager(models.Manager, FavoritesManagerMixin):
