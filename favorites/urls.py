@@ -30,7 +30,9 @@ urlpatterns = patterns("",
                        url(r'^favorite/delete/$',
                            'favorites.views.delete_favorite',
                            name='delete-favorite'),
-
+                       url(r'^favorite/add/$',
+                           'favorites.views.create_favorite',
+                           name='create-favorite'),
                        url(r'^favorite/move/(?P<object_id>\d+)$',
                            'favorites.views.move_favorite',
                            name='move-favorite'),
@@ -50,17 +52,13 @@ urlpatterns = patterns("",
                        url('^folder/add/$',
                            'favorites.views.create_folder',
                            name='create-folder'),
-
-                       # delete
                        url('^folder/delete/(?P<object_id>\d+)$',
                            'favorites.views.delete_folder_confirmation',
                            name='delete-folder-confirmation'),
                        url('^folder/delete/$',
                            'favorites.views.delete_folder',
                            name='delete-folder'),
-
                        url('^folder/update/(?P<object_id>\d+)$',
                            'favorites.views.update_folder',
                            name='update-folder'),
-
                        )

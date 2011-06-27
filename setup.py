@@ -3,19 +3,17 @@ import os
 
 
 modules = [
-    'favorites.migrations',
     'favorites.templatetags',
     'favorites.templates.favorites',
-    'favorites.templatetags',
 ]
 
 
 setup(
     name = 'favorites',
-    version = '0.1',
+    version = '0.2',
     description = 'Generic favorites application for Django',
-    author = 'Andrew Gwozdziewycz',
-    author_email = 'git@apgwoz.com',
+    author = 'Amirouche Boubekki',
+    author_email = 'amirouche.boubekki@gmail.com',
     packages = ['favorites'] + modules,
     include_package_data=True,
     package_data = {
