@@ -145,13 +145,19 @@ def create_favorite(request):
             object_id = form.cleaned_data['object_id']
 
             folder_id = form.cleaned_data['folder']
+
             if folder_id == '0':
                 folder = None
             else:
                 folder = get_object_or_404(Folder, pk=folder_id)
+                if request.user != folder.user:
+                    return HttpResponseForbidden()
 
             model = get_model(app_label, object_name)
-            content_type = ContentType.objects.get_for_model(model)
+            try:
+                content_type = ContentType.objects.get_for_model(model)
+            except AttributeError: # there no such model
+                return HttpResponseBadRequest()
             obj = content_type.get_object_for_this_type(pk=object_id)
 
             if not Favorite.objects.filter(content_type=content_type,
