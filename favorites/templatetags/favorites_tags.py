@@ -111,6 +111,7 @@ register.tag('favorite_entry_for_item', do_favorite_entry_for_item)
 
 @register.simple_tag(takes_context=True)
 def url_add_to_favorites_confirmation(context, object):
+    """The template should have a request context"""
     view_name = 'add-to-favorites-confirmation'
     args = (object._meta.app_label.lower(),
             object._meta.object_name.lower(),
@@ -123,6 +124,7 @@ def url_add_to_favorites_confirmation(context, object):
 
 @register.simple_tag(takes_context=True)
 def url_delete_from_favorites_confirmation(context, object):
+    """The template should have a request context"""
     view_name = 'delete-from-favorites-confirmation-for-object'
     args = (object._meta.app_label.lower(),
             object._meta.object_name.lower(),
