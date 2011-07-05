@@ -116,10 +116,10 @@ def url_add_to_favorites_confirmation(context, object):
     args = (object._meta.app_label.lower(),
             object._meta.object_name.lower(),
             object.pk)
-    return reverse(view_name,
-                   args=args,
-                   kwargs=[],
-                   current_app=context.current_app)
+    target_url = reverse(view_name,
+                         args=args,
+                         current_app=context.current_app)
+    return target_url
 
 
 @register.simple_tag(takes_context=True)
@@ -129,7 +129,7 @@ def url_delete_from_favorites_confirmation(context, object):
     args = (object._meta.app_label.lower(),
             object._meta.object_name.lower(),
             object.pk)
-    return reverse(view_name,
-                   args=args,
-                   kwargs=[],
-                   current_app=context.current_app)
+    target_url = reverse(view_name,
+                         args=args,
+                         current_app=context.current_app)
+    return target_url
