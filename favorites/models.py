@@ -36,12 +36,3 @@ class Favorite(models.Model):
     def __unicode__(self):
         object_repr = unicode(self.content_object)
         return u"%s likes %s" % (self.user, object_repr)
-
-
-def remove_favorites(sender, **kwargs):
-    instance = kwargs.get('instance')
-    # Solves the session pk issue.
-    if isinstance(instance.pk, int):
-        Favorite.objects.favorites_for_object(instance).delete()
-
-models.signals.post_delete.connect(remove_favorites)
