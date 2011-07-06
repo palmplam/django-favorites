@@ -13,13 +13,10 @@ urlpatterns = patterns("",
                            name='favorites'),
 
                        # add
-                       url(r'^favorite/add/(?P<app_label>\w+)/(?P<object_name>\w+)/(?P<object_id>\d+)$',
-                           'favorites.views.create_favorite_confirmation',
-                           name='add-to-favorites-confirmation'),
                        url(r'^favorite/delete/(?P<app_label>\w+)/(?P<object_name>\w+)/(?P<object_id>\d+)$',
                            'favorites.views.delete_favorite_confirmation_for_object',
                            name='delete-from-favorites-confirmation-for-object'),
-                       url(r'^favorite/add/$',
+                       url(r'^favorite/add/(?P<app_label>\w+)/(?P<object_name>\w+)/(?P<object_id>\d+)$',
                            'favorites.views.create_favorite',
                            name='create-favorite'),
 

@@ -248,7 +248,8 @@ class FavoriteListTests(BaseFavoritesTestCase):
         self.assertEquals(response.status_code, 302)
 
 
-class FavoriteAddConfirmationTests(BaseFavoritesTestCase):
+class AddFavoriteTests(BaseFavoritesTestCase):
+
     def test_show_page(self):
         godzilla = self.user('godzilla')
         self.client.login(username='godzilla', password='godzilla')
@@ -281,18 +282,6 @@ class FavoriteAddConfirmationTests(BaseFavoritesTestCase):
         self.assertEquals(response.status_code, 302)
 
 
-class AddFavoriteTests(BaseFavoritesTestCase):
-    def test_login_required(self):
-        response = self.client.get('/favorite/add/')
-        self.assertEquals(response.status_code, 302)
-
-    def test_no_get(self):
-        godzilla = self.user('godzilla')
-        self.client.login(username='godzilla', password='godzilla')
-        response = self.client.get('/favorite/add/')
-        self.assertEquals(response.status_code, 400)
-        godzilla.delete()
-
     def test_submit(self):
         godzilla = self.user('godzilla')
         self.client.login(username='godzilla', password='godzilla')
@@ -300,7 +289,9 @@ class AddFavoriteTests(BaseFavoritesTestCase):
         folder.save()
         dummy = DummyModel()
         dummy.save()
-        response = self.client.post('/favorite/add/', 
+        response = self.client.post('/favorite/add/%s/%s/%s' % ('favorites',
+                                                                'dummymodel',
+                                                                dummy.pk),
                                     {'app_label': 'favorites',
                                      'object_name': 'dummymodel',
                                      'object_id': dummy.pk,
@@ -320,12 +311,15 @@ class AddFavoriteTests(BaseFavoritesTestCase):
         folder.save()
         dummy = DummyModel()
         dummy.save()
-        response = self.client.post('/favorite/add/', 
+        response = self.client.post('/favorite/add/%s/%s/%s' % ('favorites',
+                                                                'dummymodel',
+                                                                dummy.pk), 
                                     {'app_label': 'favorites',
-                                     'object_name': 'dummumodel',
+                                     'object_name': 'dummymodel',
                                      'object_id': dummy.pk,
                                      'folder': folder.pk})
-        self.assertEquals(response.status_code, 400)
+        self.assertEquals(response.status_code, 200)
+        # FIXME: check that the form has an error
         godzilla.delete()
         folder.delete()
         dummy.delete()
@@ -334,7 +328,7 @@ class AddFavoriteTests(BaseFavoritesTestCase):
     def test_bad_model(self):
         godzilla = self.user('godzilla')
         self.client.login(username='godzilla', password='godzilla')
-        response = self.client.post('/favorite/add/', 
+        response = self.client.post('/favorite/add/foo/bar/123', 
                                     {'app_label': 'foo',
                                      'object_name': 'bar',
                                      'object_id': 123,

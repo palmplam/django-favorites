@@ -98,42 +98,23 @@ def list_favorites(request):
 
 
 @login_required
-def create_favorite_confirmation(request,
-                                 app_label,
-                                 object_name,
-                                 object_id):
+def create_favorite(request,
+                    app_label,
+                    object_name,
+                    object_id):
     """Renders a formular to get confirmation to favorite the
     object represented by `app_label`, `object_name` and `object_id`
-    creation. It raise a 404 exception if there is not such object."""
-
-    model = get_model(app_label, object_name)
-    if model is None:
-        return HttpResponseNotFound()
-    object = get_object_or_404(model, pk=object_id)
-
-    initial = {'app_label': app_label,
-               'object_name': object_name,
-               'object_id': object_id}
+    creation. It raise a 404 exception if there is not such object.
+    If it's a POST creates the favorite object if there isn't
+    any such favorite already. If validation fails the it returns the
+    with an insightful error. If the validation succeed the favorite is 
+    added to user profile and a redirection is returned"""
     choices = [(0, '')]
-    choices.extend(Folder.objects.filter(user=request.user).order_by('name').values_list('pk', 'name'))
+    query = Folder.objects.filter(user=request.user)
+    folder_choices = query.order_by('name').values_list('pk', 'name')
+    choices.extend(folder_choices)
 
-    form = CreateFavoriteForm(choices=choices ,initial=initial)
-
-    ctx = {'form': form, 'object': object, 'next':request.GET.get('next', '/')}
-    ctx = RequestContext(request, ctx)
-    return render_to_response('favorites/confirm_favorite.html', ctx)
-
-
-@login_required
-def create_favorite(request):
-    """Validates POST and create the favorite object if there isn't
-    any such favorite already. If validation fails the it returns a
-    bad request error. If the validation succeed the favorite is added
-    to user profile and a redirection is returned"""
     if request.method == 'POST':
-        choices = [(0, '')]
-        choices.extend(Folder.objects.filter(user=request.user).order_by('name').values_list('pk', 'name'))
-
         form = CreateFavoriteForm(choices=choices, data=request.POST)
 
         if form.is_valid():
@@ -164,7 +145,21 @@ def create_favorite(request):
                                                  request.user,
                                                  folder)
             return redirect(request.GET.get('next', '/'))
-    return HttpResponseBadRequest()
+    else:
+        initial = {'app_label': app_label,
+                   'object_name': object_name,
+                   'object_id': object_id}
+
+        form = CreateFavoriteForm(choices=choices ,initial=initial)
+
+    model = get_model(app_label, object_name)
+    if model is None:
+        return HttpResponseNotFound()
+    object = get_object_or_404(model, pk=object_id)
+
+    ctx = {'form': form, 'object': object, 'next':request.GET.get('next', '/')}
+    ctx = RequestContext(request, ctx)
+    return render_to_response('favorites/favorite_add.html', ctx)
 
 
 @login_required
