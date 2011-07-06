@@ -66,16 +66,7 @@ def update_folder(request, object_id):
 
 
 @login_required
-def delete_folder_confirmation(request, object_id):
-    form = ObjectIdForm(initial={'object_id': object_id})
-    folder = get_object_or_404(Folder, pk=object_id)
-    next = request.GET.get('next', None)
-    return render_to_response('favorites/delete_folder_confirmation.html',
-                              RequestContext(request, {'form': form,
-                                                       'folder': folder,
-                                                       'next': next}))
-@login_required
-def delete_folder(request):
+def delete_folder(request, object_id):
     if request.method == 'POST':
         form = ObjectIdForm(request.POST)
         if form.is_valid():
@@ -86,8 +77,14 @@ def delete_folder(request):
                 return redirect(request.GET.get('next', '/'))
             else:
                 return HttpResponseForbidden()
-    return HttpResponseBadRequest()
-
+    else:
+        form = ObjectIdForm(initial={'object_id': object_id})
+    folder = get_object_or_404(Folder, pk=object_id)
+    next = request.GET.get('next', None)
+    return render_to_response('favorites/folder_delete.html',
+                              RequestContext(request, {'form': form,
+                                                       'folder': folder,
+                                                       'next': next}))
 
 ### FAVORITE VIEWS #########################################################
 

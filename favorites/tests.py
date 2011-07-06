@@ -96,18 +96,9 @@ class FolderAddTests(BaseFavoritesTestCase):
 
 
 class FolderDeleteTests(BaseFavoritesTestCase):
-    def test_delete(self):
-        """If you submit the form with empty object_id it should
-        answer with 400 error"""
-        godzilla = self.user('godzilla')
-        self.client.login(username='godzilla', password='godzilla')
-        response = self.client.get('/folder/delete/')
-        self.assertEquals(response.status_code, 400)
-        godzilla.delete()
-
     def test_check_credentials(self):
         """The user should be logged in to delete something"""
-        response = self.client.get('/folder/delete/')
+        response = self.client.get('/folder/delete/1')
         self.assertEquals(response.status_code, 302)
 
     def test_delete_post(self):
@@ -117,7 +108,7 @@ class FolderDeleteTests(BaseFavoritesTestCase):
         folder = Folder(name='japan', user=godzilla)
         folder.save()
         self.client.login(username='godzilla', password='godzilla')
-        response = self.client.post('/folder/delete/', {'object_id': folder.pk})
+        response = self.client.post('/folder/delete/%s' % folder.pk, {'object_id': folder.pk})
         self.assertEquals(response.status_code, 302)
         self.assertEquals(Folder.objects.filter(user=godzilla).count(), 0)
         godzilla.delete()
@@ -127,7 +118,7 @@ class FolderDeleteTests(BaseFavoritesTestCase):
         raise a 404"""
         godzilla = self.user('godzilla')
         self.client.login(username='godzilla', password='godzilla')
-        response = self.client.post('/folder/delete/', {'object_id': 1})
+        response = self.client.post('/folder/delete/1', {'object_id': 1})
         self.assertEquals(response.status_code, 404)
         godzilla.delete()
 
@@ -138,13 +129,11 @@ class FolderDeleteTests(BaseFavoritesTestCase):
         folder.save()
         leviathan = self.user('leviathan')
         self.client.login(username='leviathan', password='leviathan')
-        response = self.client.post('/folder/delete/', {'object_id': folder.pk})
+        response = self.client.post('/folder/delete/%d' % folder.pk, {'object_id': folder.pk})
         self.assertEquals(response.status_code, 403)
         godzilla.delete()
         leviathan.delete()
 
-
-class FolderDeleteConfirmationObjectTests(BaseFavoritesTestCase):
     def test_confirmation(self):
         """Test that the page is reachable with an existing folder"""
         godzilla = self.user('godzilla')
@@ -163,13 +152,6 @@ class FolderDeleteConfirmationObjectTests(BaseFavoritesTestCase):
         self.client.login(username='godzilla', password='godzilla')
         response = self.client.get('/folder/delete/%s' % 1)
         self.assertEquals(response.status_code, 404)
-        godzilla.delete()
-
-    def test_confirmation_credentials(self):
-        """Tests that the user is redirect if not logged in"""
-        godzilla = self.user('godzilla')
-        response = self.client.get('/folder/delete/%s' % 1)
-        self.assertEquals(response.status_code, 302)
         godzilla.delete()
 
 
