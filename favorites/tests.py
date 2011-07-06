@@ -28,7 +28,7 @@ class BaseFavoritesTestCase(TestCase):
         self.client.logout()
 
     def user(self, name):
-        u = User.objects.create(username=name)
+        u = User.objects.create(username=name) # FIXME create(username, password)
         u.set_password(name)
         u.save()
         return u
