@@ -477,7 +477,7 @@ class DeleteFavoriteConfirmation(BaseFavoritesTestCase):
         self.assertIsNotNone(response.context['form'].fields.get('object_id', None))
         # FIXME: Check that the form has the good object_id
         self.assertIsNotNone(response.context.get('object', None))
-        self.assertEquals(response.context['object'].pk, favorite.pk)
+        self.assertEquals(response.context['object'].pk, dummy.pk)
         godzilla.delete()
         dummy.delete()
         favorite.delete()
