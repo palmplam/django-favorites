@@ -67,23 +67,16 @@ def update_folder(request, object_id):
 
 @login_required
 def delete_folder(request, object_id):
+    folder = get_object_or_404(Folder, pk=object_id)
+    if request.user != folder.user:
+        return HttpResponseForbidden()
     if request.method == 'POST':
-        form = ObjectIdForm(request.POST)
-        if form.is_valid():
-            object_id = form.cleaned_data['object_id']
-            folder = get_object_or_404(Folder, pk=object_id)
-            if request.user == folder.user:
-                folder.delete()
-                return redirect(request.GET.get('next', '/'))
-            else:
-                return HttpResponseForbidden()
-    else:
-        form = ObjectIdForm(initial={'object_id': object_id})
+        folder.delete()
+        return redirect(request.GET.get('next', '/'))
     folder = get_object_or_404(Folder, pk=object_id)
     next = request.GET.get('next', None)
     return render_to_response('favorites/folder_delete.html',
-                              RequestContext(request, {'form': form,
-                                                       'folder': folder,
+                              RequestContext(request, {'folder': folder,
                                                        'next': next}))
 
 ### FAVORITE VIEWS #########################################################

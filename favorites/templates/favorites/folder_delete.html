@@ -1,7 +1,6 @@
 <h1>Delete folder {{ folder.name }}</h1>
 <form method="POST" action="{% url folder-delete folder.pk %}{% if next %}?next={{next}}{% endif %}">
   {% csrf_token %}
-  {{ form }}
   <input type=submit />
 </form>
       
