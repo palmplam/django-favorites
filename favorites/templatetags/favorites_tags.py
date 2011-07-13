@@ -8,7 +8,9 @@ from django.template import Variable
 from django.utils.translation import ugettext_lazy as _
 from django.template.defaulttags import URLNode
 
-from favorites.models import Favorite
+from favorites.models import Favorite, Folder
+from favorites.forms import UpdateFavoriteForm
+
 
 register = template.Library()
 
@@ -133,3 +135,16 @@ def url_delete_from_favorites_confirmation(context, object):
                          args=args,
                          current_app=context.current_app)
     return target_url
+
+
+@register.inclusion_tag('favorites/move_favorite_widget.html', takes_context=True)
+def move_favorite_widget(context, favorite): # FIXME next url should be a parameter
+    user = context['request'].user
+    path = context['request'].path
+    choices = [(0, '')]
+    choices.extend(Folder.objects.filter(user=user).order_by('name').values_list('pk', 'name'))
+    folder_id = favorite.folder.pk if favorite.folder else 0
+    form = UpdateFavoriteForm(choices=choices,
+                              initial={'folder': folder_id,
+                                       'object_id': favorite.pk})
+    return {'form':form, 'favorite': favorite, 'next': path}
