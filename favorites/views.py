@@ -143,7 +143,7 @@ def create_favorite(request,
                    'object_name': object_name,
                    'object_id': object_id}
 
-        form = CreateFavoriteForm(choices=choices ,initial=initial)
+        form = CreateFavoriteForm(choices=choices, initial=initial)
 
     model = get_model(app_label, object_name)
     if model is None:
@@ -243,12 +243,10 @@ def move_favorite(request, object_id):
         return HttpResponseForbidden()
 
     if request.method == 'POST':
-        form = UpdateFavoriteForm(request.POST)
-        user_folders = [(0, '')]
-        user_folders.extend(Folder.objects.filter(user=request.user).order_by('name').values_list('pk', 'name'))
+        choices = [(0, '')]
+        choices.extend(Folder.objects.filter(user=request.user).order_by('name').values_list('pk', 'name'))
+        form = UpdateFavoriteForm(choices=choices, data=request.POST)
     
-        form.fields['folder'].choices = user_folders
-        
         if form.is_valid():
             folder_id = form.cleaned_data['folder']
             if folder_id == '0':
@@ -263,12 +261,12 @@ def move_favorite(request, object_id):
     else:
         folder_id = favorite.folder.pk
 
-    form = UpdateFavoriteForm(initial={'folder': folder_id,
+    choices = [(0, '')]
+    choices.extend(Folder.objects.filter(user=request.user).order_by('name').values_list('pk', 'name'))
+    form = UpdateFavoriteForm(choices=choices,
+                              initial={'folder': folder_id,
                                        'object_id': favorite.pk})
-    user_folders = [(0, '')]
-    user_folders.extend(Folder.objects.filter(user=request.user).order_by('name').values_list('pk', 'name'))
 
-    form.fields['folder'].choices = user_folders
 
     ctx = {'form': form, 'favorite': favorite, 'next': request.GET.get('next', '/')}
     ctx = RequestContext(request, ctx)

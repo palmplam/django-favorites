@@ -29,9 +29,13 @@ class CreateFavoriteForm(ObjectHiddenForm):
     folder = forms.ChoiceField(required=True)
 
     def __init__(self, choices, **kwargs):
-        forms.Form.__init__(self, **kwargs)
+        super(CreateFavoriteForm, self).__init__(**kwargs)
         self.fields['folder'].choices = choices
 
 
 class UpdateFavoriteForm(ObjectIdForm):
     folder = forms.ChoiceField(required=True)
+
+    def __init__(self, choices, **kwargs):
+        super(UpdateFavoriteForm, self).__init__(**kwargs)
+        self.fields['folder'].choices = choices
