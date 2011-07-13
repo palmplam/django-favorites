@@ -1,10 +1,10 @@
 <h1>Your favorites</h1>
-{% if object_list %}
-    <ul>
-{% for object in object_list %}
-    <li>{{object}}{% if object.folder %}@{{object.folder}}{% endif %} [<a href="{% url delete-favorite-confirmation object.pk %}?next={% url favorites %}">remove</a>][<a href="{% url move-favorite object.id %}?next={% url favorites %}">move</a>]</li>
-{% endfor %}
+{% if favorites %}
+<ul>
+    {% for favorite in favorites %}
+    <li>{{favorite}}{% if favorite.folder %}@{{favorite.folder}}{% endif %} [<a href="{% url delete-favorite-confirmation favorite.pk %}?next={% url favorites %}">remove</a>][<a href="{% url move-favorite favorite.id %}?next={% url favorites %}">move</a>]</li>
+    {% endfor %}
 </ul>
 {% else %}
-   <p>You have no favorites you are not a socialite !</p>
+<p>You have no favorites you are not a socialite !</p>
 {% endif %}

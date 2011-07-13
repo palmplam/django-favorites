@@ -237,7 +237,7 @@ class FavoriteListTests(BaseFavoritesTestCase):
         Favorite.objects.create_favorite(dummy, leviathan)
         response = self.client.get('/favorites/')
         self.assertEquals(response.status_code, 200)
-        self.assertEquals(len(response.context['object_list']), 0)
+        self.assertEquals(len(response.context['favorites']), 0)
         dummy.delete()
         godzilla.delete()
         leviathan.delete()
@@ -519,8 +519,8 @@ class FavoriteContentTypeList(BaseFavoritesTestCase):
         # tests
         response = self.client.get('/favorite/favorites/dummymodel/')
         self.assertEquals(response.status_code, 200)
-        self.assertIsNotNone(response.context['object_list'])
-        for object in response.context['object_list']:
+        self.assertIsNotNone(response.context['favorites'])
+        for object in response.context['favorites']:
             self.assertIn(object.pk, godzilla_favorite_pks)
 
         # teardown
@@ -556,8 +556,8 @@ class FavoriteContentTypeList(BaseFavoritesTestCase):
         # tests
         response = self.client.get('/favorite/favorites/dummymodel/')
         self.assertEquals(response.status_code, 200)
-        self.assertIsNotNone(response.context['object_list'])
-        for object in response.context['object_list']:
+        self.assertIsNotNone(response.context['favorites'])
+        for object in response.context['favorites']:
             self.assertIn(object.pk, godzilla_dummymodel_favorite_pks)
 
         # teardown
@@ -614,7 +614,7 @@ class MoveFavoriteTests(BaseFavoritesTestCase):
             choices = response.context['form'].fields['folder'].choices
             self.assertIn(option, choices)
 
-        object = response.context['object']
+        object = response.context['favorite']
         self.assertEquals(object.pk, favorite.pk)
         favorite.delete()
         godzilla.delete()
@@ -794,8 +794,8 @@ class ContentTypeByFolderList(BaseFavoritesTestCase):
         self.client.login(username='godzilla', password='godzilla')
         response = self.client.get('/favorite/favorites/dummymodel/folder/%s' % japan.pk)
         self.assertEquals(response.status_code, 200)
-        self.assertIsNotNone(response.context['object_list'])
-        for object in response.context['object_list']:
+        self.assertIsNotNone(response.context['favorites'])
+        for object in response.context['favorites']:
             self.assertIn(object.pk, japan_folder_pks)
 
         godzilla.delete()

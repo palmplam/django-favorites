@@ -85,7 +85,7 @@ def delete_folder(request, object_id):
 @login_required
 def list_favorites(request):
     object_list = Favorite.objects.favorites_for_user(request.user)
-    ctx = {'object_list': object_list}
+    ctx = {'favorites': object_list}
     ctx = RequestContext(request, ctx)
     return render_to_response('favorites/favorite_list.html', ctx)
 
@@ -270,7 +270,7 @@ def move_favorite(request, object_id):
 
     form.fields['folder'].choices = user_folders
 
-    ctx = {'form': form, 'object': favorite, 'next': request.GET.get('next', '/')}
+    ctx = {'form': form, 'favorite': favorite, 'next': request.GET.get('next', '/')}
     ctx = RequestContext(request, ctx)
     return render_to_response('favorites/favorite_move.html', ctx)
 
@@ -284,7 +284,7 @@ def content_type_list(request, app_label, object_name):
 
     favorites = Favorite.objects.filter(content_type=content_type,
                                         user=request.user)
-    ctx = {'object_list': favorites,
+    ctx = {'favorites': favorites,
            'model': model}
     ctx = RequestContext(request, ctx)
 
@@ -310,7 +310,7 @@ def content_type_by_folder_list(request, app_label, object_name, folder_id):
     favorites = Favorite.objects.filter(content_type=content_type,
                                         user=request.user,
                                         folder=folder)
-    ctx = {'object_list': favorites,
+    ctx = {'favorites': favorites,
            'model': model,
            'folder': folder}
     ctx = RequestContext(request, ctx)
