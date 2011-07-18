@@ -9,10 +9,13 @@ class ObjectIdForm(forms.Form):
 class ObjectHiddenForm(forms.Form):
     """Form to confirm favorite creation"""
     app_label = forms.CharField(max_length=100,
-                                widget=forms.HiddenInput())
+                                widget=forms.HiddenInput(),
+                                required=True)
     object_name = forms.CharField(max_length=100,
-                                  widget=forms.HiddenInput())
-    object_id = forms.IntegerField(widget=forms.HiddenInput())
+                                  widget=forms.HiddenInput(),
+                                  required=True)
+    object_id = forms.IntegerField(widget=forms.HiddenInput(),
+                                   required=True)
 
 
 ### FOLDER FORMS ###########################################################
@@ -39,3 +42,8 @@ class UpdateFavoriteForm(ObjectIdForm):
     def __init__(self, choices, **kwargs):
         super(UpdateFavoriteForm, self).__init__(**kwargs)
         self.fields['folder'].choices = choices
+
+
+class FavoriteMoveHiddenForm(ObjectIdForm):
+    folder = forms.CharField(widget=forms.HiddenInput(),
+                             required=True)

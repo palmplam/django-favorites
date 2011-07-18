@@ -9,6 +9,7 @@ from django.http import HttpResponseNotFound
 from django.http import HttpResponseBadRequest
 from django.http import HttpResponseForbidden
 from django.utils import simplejson
+
 from django.core.urlresolvers import reverse
 
 from favorites.models import Favorite
@@ -18,9 +19,10 @@ from favorites.forms import ObjectIdForm
 from favorites.forms import FolderForm
 from favorites.forms import CreateFavoriteForm
 from favorites.forms import UpdateFavoriteForm
+from favorites.forms import FavoriteMoveHiddenForm
+
 
 ### FOLDER VIEWS ###########################################################
-
 
 @login_required
 def list_folder(request):
@@ -267,10 +269,33 @@ def move_favorite(request, object_id):
                               initial={'folder': folder_id,
                                        'object_id': favorite.pk})
 
-
-    ctx = {'form': form, 'favorite': favorite, 'next': request.GET.get('next', '/')}
+    ctx = {'form': form,
+           'favorite': favorite,
+           'next': request.GET.get('next', '/')}
     ctx = RequestContext(request, ctx)
     return render_to_response('favorites/favorite_move.html', ctx)
+
+
+@login_required
+def move_favorite_confirmation(request, favorite_id, folder_id):
+    """Confirm move before submitting action"""
+    favorite = get_object_or_404(Favorite, pk=favorite_id)
+    if request.user != favorite.user:
+        return HttpResponseForbidden()
+    folder = get_object_or_404(Folder, pk=folder_id)
+    if request.user != folder.user:
+        return HttpResponseForbidden()
+
+    form = FavoriteMoveHiddenForm(initial={'folder': folder.pk,
+                                           'object_id': favorite.pk})
+    next = request.GET.get('next', None)
+
+    ctx = {'form': form,
+           'favorite': favorite,
+           'folder': folder,
+           'next': next}
+    ctx = RequestContext(request, ctx)
+    return render_to_response('favorites/favorite_move_confirmation.html', ctx)
 
 
 @login_required

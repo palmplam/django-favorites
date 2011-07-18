@@ -34,6 +34,11 @@ urlpatterns = patterns("",
                            'favorites.views.move_favorite',
                            name='move-favorite'),
 
+                       # move
+                       url(r'^favorite/(?P<favorite_id>\d+)/move/(?P<folder_id>\d+)$',
+                           'favorites.views.move_favorite_confirmation',
+                           name='move-favorite-confirmation'),
+
                        # more listing 
                        url(r'^favorite/(?P<app_label>\w+)/(?P<object_name>\w+)/$',
                            'favorites.views.content_type_list',
