@@ -147,4 +147,7 @@ def move_favorite_widget(context, favorite): # FIXME next url should be a parame
     form = UpdateFavoriteForm(choices=choices,
                               initial={'folder': folder_id,
                                        'object_id': favorite.pk})
-    return {'form':form, 'favorite': favorite, 'next': path}
+    return {'form': form,
+            'favorite': favorite,
+            'next': path,
+            'path': context.request.path}
