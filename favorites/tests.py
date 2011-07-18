@@ -4,6 +4,8 @@ from django.test.client import Client
 from django.test import TestCase
 from django.db import models
 
+from django.core.urlresolvers import reverse
+
 from models import Favorite
 from models import Folder
 
@@ -805,6 +807,81 @@ class ContentTypeByFolderList(BaseFavoritesTestCase):
         japan.delete()
         china.delete()
 
+
+class MoveFavoriteConfirmation(TestCase):
+    def test_login_required(self):
+        client = Client()
+        target_url = reverse('move-favorite-confirmation',
+                             args=(1,2))
+        response = client.get(target_url,
+                              follow=True)
+        redirect_url, status = response.redirect_chain[0]
+        self.assertEqual(status, 302)
+        test_redirect = 'http://testserver/accounts/login/?next=%s' % target_url
+        self.assertEqual(redirect_url, test_redirect)
+
+
+    def test_user_permission_on_folder(self):
+        user = User.objects.create(username='user')
+        user.set_password('user')
+        user.save()
+        user2 = User.objects.create(username='user2')
+        user2.set_password('user2')
+        user2.save()
+        folder = Folder(user=user2, name='name')
+        folder.save()
+        dummy = DummyModel()
+        dummy.save()
+        favorite = Favorite.objects.create_favorite(user=user,
+                                                    content_object=dummy)
+        target_url = reverse('move-favorite-confirmation',
+                             args=(favorite.pk,
+                                   folder.pk))
+        client = Client()
+        self.assertTrue(client.login(username='user', password='user'))
+        response = client.get(target_url)
+        self.assertEqual(response.status_code, 403)
+
+    def test_user_permission_on_favorite(self):
+        user = User.objects.create(username='user')
+        user.set_password('user')
+        user.save()
+        user2 = User.objects.create(username='user2')
+        user2.set_password('user2')
+        user2.save()
+        folder = Folder(user=user, name='name')
+        folder.save()
+        dummy = DummyModel()
+        dummy.save()
+        favorite = Favorite.objects.create_favorite(user=user2,
+                                                    content_object=dummy)
+        target_url = reverse('move-favorite-confirmation',
+                             args=(favorite.pk,
+                                   folder.pk))
+        client = Client()
+        self.assertTrue(client.login(username='user', password='user'))
+        response = client.get(target_url)
+        self.assertEqual(response.status_code, 403)
+
+    def test_proper_request(self):
+        user = User.objects.create(username='user')
+        user.set_password('user')
+        user.save()
+        folder = Folder(user=user, name='name')
+        folder.save()
+        dummy = DummyModel()
+        dummy.save()
+        favorite = Favorite.objects.create_favorite(user=user,
+                                                    content_object=dummy)
+        target_url = reverse('move-favorite-confirmation',
+                             args=(favorite.pk,
+                                   folder.pk))
+        client = Client()
+        self.assertTrue(client.login(username='user', password='user'))
+        response = client.get(target_url)
+        self.assertEqual(response.status_code, 200)
+
+        
 """
 class AnimalManager(models.Manager, FavoritesManagerMixin):
     pass
