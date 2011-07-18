@@ -150,4 +150,4 @@ def move_favorite_widget(context, favorite): # FIXME next url should be a parame
     return {'form': form,
             'favorite': favorite,
             'next': path,
-            'path': context['request']path}
+            'path': context['request'].path}
