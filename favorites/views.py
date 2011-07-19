@@ -300,7 +300,7 @@ def move_favorite_confirmation(request, favorite_id, folder_id):
 
 
 @login_required
-def toggle_favorite_confirmation(request, favorite_id):
+def toggle_share_favorite_confirmation(request, favorite_id):
     """Confirm before submiting the toggle share action"""
     favorite = get_object_or_404(Favorite, pk=favorite_id)
     if request.user != favorite.user:

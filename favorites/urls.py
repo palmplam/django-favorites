@@ -41,8 +41,8 @@ urlpatterns = patterns("",
 
                        # toggle share
                        url(r'^favorite/(?P<favorite_id>\d+)/toggle$',
-                           'favorites.views.toggle_favorite_confirmation',
-                           name='toggle-favorite-confirmation'),
+                           'favorites.views.toggle_share_favorite_confirmation',
+                           name='toggle-share-favorite-confirmation'),
 
                        # more listing
                        url(r'^favorite/(?P<app_label>\w+)/(?P<object_name>\w+)/$',
