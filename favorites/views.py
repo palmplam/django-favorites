@@ -330,7 +330,8 @@ def content_type_list(request, app_label, object_name):
     favorites = Favorite.objects.filter(content_type=content_type,
                                         user=request.user)
     ctx = {'favorites': favorites,
-           'model': model}
+           'app_label': app_label,
+           'object_name': object_name}
     ctx = RequestContext(request, ctx)
 
     custom_template = 'favorites/list_favorites_%s_%s.html' % (app_label,
@@ -357,7 +358,8 @@ def content_type_by_folder_list(request, app_label, object_name, folder_id):
                                         user=request.user,
                                         folder=folder)
     ctx = {'favorites': favorites,
-           'model': model,
+           'app_label': app_label,
+           'object_name': object_name,
            'folder': folder}
     ctx = RequestContext(request, ctx)
 
