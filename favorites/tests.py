@@ -881,9 +881,9 @@ class MoveFavoriteConfirmation(TestCase):
         response = client.get(target_url)
         self.assertEqual(response.status_code, 200)
 
-class ToggleFavoriteConfirmation(TestCase):
+class ToggleShareFavoritesTests(TestCase):
     def test_login_required(self):
-        target_url = reverse('toggle-share-favorite-confirmation', args=(0,))
+        target_url = reverse('toggle-share-favorite', args=(0,))
         client = Client()
         response = client.get(target_url, follow=True)
         redirect_url, status = response.redirect_chain[0]
@@ -901,7 +901,7 @@ class ToggleFavoriteConfirmation(TestCase):
                                                     content_object=dummy)
         favorite.save()
 
-        target_url = reverse('toggle-share-favorite-confirmation',
+        target_url = reverse('toggle-share-favorite',
                              args=(favorite.pk,))
 
         client = Client()
@@ -923,7 +923,7 @@ class ToggleFavoriteConfirmation(TestCase):
                                                     content_object=dummy)
         favorite.save()
 
-        target_url = reverse('toggle-share-favorite-confirmation',
+        target_url = reverse('toggle-share-favorite',
                              args=(favorite.pk,))
 
         client = Client()
@@ -941,7 +941,7 @@ class ToggleFavoriteConfirmation(TestCase):
                                                     content_object=dummy)
         favorite.save()
 
-        target_url = reverse('toggle-share-favorite-confirmation',
+        target_url = reverse('toggle-share-favorite',
                              args=(favorite.pk,))
 
         client = Client()
