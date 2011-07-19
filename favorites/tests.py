@@ -881,7 +881,77 @@ class MoveFavoriteConfirmation(TestCase):
         response = client.get(target_url)
         self.assertEqual(response.status_code, 200)
 
-        
+class ToggleFavoriteConfirmation(TestCase):
+    def test_login_required(self):
+        target_url = reverse('toggle-share-favorite-confirmation', args=(0,))
+        client = Client()
+        response = client.get(target_url, follow=True)
+        redirect_url, status = response.redirect_chain[0]
+        self.assertEqual(status, 302)
+        login_test_url = 'http://testserver/accounts/login/?next=%s' % target_url
+        self.assertEqual(redirect_url, login_test_url)
+
+    def test_proper_request(self):
+        user = User.objects.create(username='user')
+        user.set_password('user')
+        user.save()
+        dummy = DummyModel()
+        dummy.save()
+        favorite = Favorite.objects.create_favorite(user=user,
+                                                    content_object=dummy)
+        favorite.save()
+
+        target_url = reverse('toggle-share-favorite-confirmation',
+                             args=(favorite.pk,))
+
+        client = Client()
+        self.assertTrue(client.login(username='user', password='user'))
+        response = client.get(target_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['favorite'].pk, favorite.pk)
+
+    def test_user_permission_on_favorite(self):
+        user = User.objects.create(username='user')
+        user.set_password('user')
+        user.save()
+        user2 = User.objects.create(username='user2')
+        user2.set_password('user2')
+        user2.save()
+        dummy = DummyModel()
+        dummy.save()
+        favorite = Favorite.objects.create_favorite(user=user2,
+                                                    content_object=dummy)
+        favorite.save()
+
+        target_url = reverse('toggle-share-favorite-confirmation',
+                             args=(favorite.pk,))
+
+        client = Client()
+        self.assertTrue(client.login(username='user', password='user'))
+        response = client.get(target_url)
+        self.assertEqual(response.status_code, 403)
+
+    def test_post(self):
+        user = User.objects.create(username='user')
+        user.set_password('user')
+        user.save()
+        dummy = DummyModel()
+        dummy.save()
+        favorite = Favorite.objects.create_favorite(user=user,
+                                                    content_object=dummy)
+        favorite.save()
+
+        target_url = reverse('toggle-share-favorite-confirmation',
+                             args=(favorite.pk,))
+
+        client = Client()
+        self.assertTrue(client.login(username='user', password='user'))
+        response = client.post(target_url)
+        self.assertEqual(response.status_code, 302)
+        favorite = Favorite.objects.get(pk=favorite.pk)
+        self.assertTrue(favorite.shared)
+
+    
 """
 class AnimalManager(models.Manager, FavoritesManagerMixin):
     pass
