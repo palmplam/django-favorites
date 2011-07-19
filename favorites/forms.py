@@ -47,3 +47,7 @@ class UpdateFavoriteForm(ObjectIdForm):
 class FavoriteMoveHiddenForm(ObjectIdForm):
     folder = forms.CharField(widget=forms.HiddenInput(),
                              required=True)
+
+
+class ValidationForm(forms.Form):
+    pass

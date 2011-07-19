@@ -23,10 +23,12 @@ class Favorite(models.Model):
     content_object = generic.GenericForeignKey('content_type', 'object_id')
 
     folder = models.ForeignKey(Folder, null=True, blank=True)
-
     created_on = models.DateTimeField(auto_now_add=True)
+    shared = models.BooleanField(default=False)
 
     objects = FavoriteManager()
+
+
 
     class Meta:
         verbose_name = _('favorite')

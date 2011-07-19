@@ -39,7 +39,12 @@ urlpatterns = patterns("",
                            'favorites.views.move_favorite_confirmation',
                            name='move-favorite-confirmation'),
 
-                       # more listing 
+                       # toggle share
+                       url(r'^favorite/(?P<favorite_id>\d+)/toggle$',
+                           'favorites.views.toggle_favorite_confirmation',
+                           name='toggle-favorite-confirmation'),
+
+                       # more listing
                        url(r'^favorite/(?P<app_label>\w+)/(?P<object_name>\w+)/$',
                            'favorites.views.content_type_list',
                            name='content-type-list'),

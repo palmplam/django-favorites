@@ -20,6 +20,7 @@ from favorites.forms import FolderForm
 from favorites.forms import CreateFavoriteForm
 from favorites.forms import UpdateFavoriteForm
 from favorites.forms import FavoriteMoveHiddenForm
+from favorites.forms import ValidationForm
 
 
 ### FOLDER VIEWS ###########################################################
@@ -299,6 +300,27 @@ def move_favorite_confirmation(request, favorite_id, folder_id):
 
 
 @login_required
+def toggle_favorite_confirmation(request, favorite_id):
+    """Confirm before submiting the toggle share action"""
+    favorite = get_object_or_404(Favorite, pk=favorite_id)
+    if request.user != favorite.user:
+        return HttpResponseForbidden()
+    if request.method == 'POST':
+        form = ValidationForm(data=request.POST)
+        if form.is_valid():
+            favorite.shared = False if favorite.shared else True  # toggle
+            favorite.save()
+            return redirect(request.GET.get('next', '/'))
+    else:
+        form = ValidationForm()
+    ctx = {'favorite': favorite}
+    ctx = RequestContext(request, ctx)
+    return render_to_response('favorites/favorite_toggle_share.html', ctx)
+
+
+# Moar listing
+
+@login_required
 def content_type_list(request, app_label, object_name):
     model = get_model(app_label, object_name)
     if model is None:
@@ -317,6 +339,7 @@ def content_type_list(request, app_label, object_name):
     return render_to_response([custom_template,
                                'favorites/list_favorites_content_type.html'],
                               ctx)
+
 
 @login_required
 def content_type_by_folder_list(request, app_label, object_name, folder_id):
