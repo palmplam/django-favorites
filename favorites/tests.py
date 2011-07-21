@@ -932,7 +932,7 @@ class ToggleShareFavoritesTests(TestCase):
         self.assertEqual(response.status_code, 403)
 
     def test_post(self):
-        user = User.objects.create(username='user')
+        user = User.objects.create(username='user', email="user@example.org")
         user.set_password('user')
         user.save()
         dummy = DummyModel()
@@ -944,14 +944,13 @@ class ToggleShareFavoritesTests(TestCase):
         target_url = reverse('toggle-share-favorite',
                              args=(favorite.pk,))
 
-        client = Client()
-        self.assertTrue(client.login(username='user', password='user'))
-        response = client.post(target_url)
-        self.assertEqual(response.status_code, 302)
+
+        self.assertTrue(self.client.login(email='user@example.org', password='user'))
+        response = self.client.post(target_url)
+        self.assertEqual(response.status_code, 302) # FIXME test redirect
         favorite = Favorite.objects.get(pk=favorite.pk)
         self.assertTrue(favorite.shared)
 
-    
 """
 class AnimalManager(models.Manager, FavoritesManagerMixin):
     pass
