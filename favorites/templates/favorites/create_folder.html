@@ -1,5 +1,5 @@
 <h2>Create a folder</h2>
-<form action="?{% if next %}next={{next}}{% endif %}" method="POST">{% csrf_token %}
+<form action="?{% if next %}next={{ next }}{% endif %}" method="POST">{% csrf_token %}
    {{ form }}
    <input type=submit />
 </form>
