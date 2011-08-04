@@ -600,13 +600,6 @@ class MoveFavoriteTests(BaseFavoritesTestCase):
         response = self.client.get('/favorite/move/%s' % favorite.pk)
         self.assertEquals(response.status_code, 200)
 
-        user_folders = [(0, '')]
-        user_folders.extend(Folder.objects.filter(user=godzilla).order_by('name').values_list('pk', 'name'))
-
-        for option in user_folders:
-            choices = response.context['form'].fields['folder'].choices
-            self.assertIn(option, choices)
-
         object = response.context['favorite']
         self.assertEquals(object.pk, favorite.pk)
         favorite.delete()
@@ -934,7 +927,7 @@ class ToggleShareFavoritesTests(TestCase):
                              kwargs={'favorite_id': favorite.pk,})
 
 
-        self.assertTrue(self.client.login(email='user@example.org', password='user'))
+        self.assertTrue(self.client.login(username='user', password='user'))
         response = self.client.post(target_url)
         self.assertEqual(response.status_code, 302) # FIXME test redirect
         favorite = Favorite.objects.get(pk=favorite.pk)
