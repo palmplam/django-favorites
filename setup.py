@@ -12,15 +12,15 @@ setup(
     name = 'favorites',
     version = '0.2',
     description = 'Generic favorites application for Django',
-    author = 'Amirouche Boubekki',
-    author_email = 'amirouche.boubekki@gmail.com',
+    author = 'Djaz Team',
+    author_email = 'devweb@liberation.fr',
     packages = ['favorites'] + modules,
     include_package_data=True,
     package_data = {
            '': ['*.txt', '*.rst'],
            'favorites': ['templates/favorites/*.html'],
        },
-    
+
     classifiers = ['Development Status :: 4 - Beta',
                    'Environment :: Web Environment',
                    'Framework :: Django',
