@@ -34,6 +34,7 @@ class CreateFavoriteForm(ObjectHiddenForm):
     def __init__(self, choices, **kwargs):
         super(CreateFavoriteForm, self).__init__(**kwargs)
         self.fields['folder'].choices = choices
+        self.fields['folder'].length = len(choices)
 
 
 class UpdateFavoriteForm(ObjectIdForm):

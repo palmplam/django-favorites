@@ -1,5 +1,7 @@
 <h1>Add <i>{{ object }}</i> to favorites</h1>
-<form method="POST" action="{% if next %}?next={{next}}{% endif %}">
-  {% csrf_token %}{% for field in form %}{{field}}{% endfor %}
-<input type=submit />  
+<form method="POST" action="{% if next %}?next={{next}}{% endif %}">{% csrf_token %}
+    {% if form.fields.folders.length != 1 %}
+        {{ form.fields.folders }}
+    {% endif %}
+<input type=submit />
 </form>
