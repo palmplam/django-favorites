@@ -2,3 +2,4 @@
 *.pyo
 *~
 favorites.egg-info
+.DS_Store

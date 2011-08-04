@@ -1,3 +1,5 @@
+import urlparse
+
 from django.views.generic.list_detail import object_list, object_detail
 from django.shortcuts import get_object_or_404, redirect, render_to_response
 from django.contrib.auth.decorators import login_required
@@ -22,6 +24,34 @@ from favorites.forms import UpdateFavoriteForm
 from favorites.forms import FavoriteMoveHiddenForm
 from favorites.forms import ValidationForm
 
+def _validate_next_parameter(request, next):
+    parsed = urlparse.urlparse(next)
+    if parsed and parsed.path:
+        return parsed.path
+    return None
+
+# Taken from https://github.com/ericflo/django-avatar/blob/master/avatar/views.py
+def _get_next(request):
+    """
+    The part that's the least straightforward about views in this module is how they 
+    determine their redirects after they have finished computation.
+
+    In short, they will try and determine the next place to go in the following order:
+
+    1. If there is a variable named ``next`` in the *POST* parameters, the view will
+    redirect to that variable's value.
+    2. If there is a variable named ``next`` in the *GET* parameters, the view will
+    redirect to that variable's value.
+    3. If Django can determine the previous page from the HTTP headers, the view will
+    redirect to that previous page.
+    """
+    next = request.POST.get('next', request.GET.get('next', request.META.get('HTTP_REFERER', None)))
+    if next:
+        next = _validate_next_parameter(request, next)
+    if not next:
+        next = request.path
+    return next
+
 
 ### FOLDER VIEWS ###########################################################
 
@@ -39,7 +69,7 @@ def create_folder(request):
         if form.is_valid():
             name = form.cleaned_data['name']
             Folder(name=name, user=request.user).save()
-            return redirect(request.GET.get('next', '/'))
+            return redirect(_get_next(request))
     form = FolderForm()
     next = request.GET.get('next', None)
     return render_to_response('favorites/create_folder.html',
@@ -59,7 +89,7 @@ def update_folder(request, object_id):
         if form.is_valid():
             folder.name = form.cleaned_data['name']
             folder.save()
-            return redirect(request.GET.get('next', '/'))
+            return redirect(_get_next(request))
     form = FolderForm(initial={'name': folder.name})
     next = request.GET.get('next', None)
     return render_to_response('favorites/folder_update.html',
@@ -75,7 +105,7 @@ def delete_folder(request, object_id):
         return HttpResponseForbidden()
     if request.method == 'POST':
         folder.delete()
-        return redirect(request.GET.get('next', '/'))
+        return redirect(_get_next(request))
     folder = get_object_or_404(Folder, pk=object_id)
     next = request.GET.get('next', None)
     return render_to_response('favorites/folder_delete.html',
@@ -140,7 +170,7 @@ def create_favorite(request,
                 Favorite.objects.create_favorite(obj,
                                                  request.user,
                                                  folder)
-            return redirect(request.GET.get('next', '/'))
+            return redirect(_get_next(request))
     else:
         initial = {'app_label': app_label,
                    'object_name': object_name,
@@ -153,7 +183,7 @@ def create_favorite(request,
         return HttpResponseNotFound()
     object = get_object_or_404(model, pk=object_id)
 
-    ctx = {'form': form, 'object': object, 'next':request.GET.get('next', '/')}
+    ctx = {'form': form, 'object': object, 'next':_get_next(request)}
     ctx = RequestContext(request, ctx)
     return render_to_response('favorites/favorite_add.html', ctx)
 
@@ -189,7 +219,7 @@ def delete_favorite(request):
             favorite = get_object_or_404(Favorite, pk=object_id)
             if request.user == favorite.user:
                 favorite.delete()
-                return redirect(request.GET.get('next', '/'))
+                return redirect(_get_next(request))
             else:
                 return HttpResponseForbidden()
     return HttpResponseBadRequest()
@@ -218,7 +248,7 @@ def delete_favorite_for_object(request,
 
     form = ObjectIdForm(initial={'object_id': favorite.pk})
 
-    ctx = {'form': form, 'object': object, 'next': request.GET.get('next', '/')}
+    ctx = {'form': form, 'object': object, 'next': _get_next(request)}
     ctx = RequestContext(request, ctx)
     return render_to_response('favorites/confirm_favorite_delete.html', ctx)
 
@@ -234,7 +264,7 @@ def delete_favorite_confirmation(request, object_id):
 
     form = ObjectIdForm(initial={'object_id': favorite.pk})
 
-    ctx = {'form': form, 'object': object, 'next': request.GET.get('next', '/')}
+    ctx = {'form': form, 'object': object, 'next': _get_next(request)}
     ctx = RequestContext(request, ctx)
     return render_to_response('favorites/confirm_favorite_delete.html', ctx)
 
@@ -258,7 +288,7 @@ def move_favorite(request, object_id):
                 folder = get_object_or_404(Folder, pk=folder_id)
             favorite.folder = folder
             favorite.save()
-            return redirect(request.GET.get('next', '/'))
+            return redirect(_get_next(request))
     if favorite.folder is None:
         folder_id = 0
     else:
@@ -272,7 +302,7 @@ def move_favorite(request, object_id):
 
     ctx = {'form': form,
            'favorite': favorite,
-           'next': request.GET.get('next', '/')}
+           'next': _get_next(request)}
     ctx = RequestContext(request, ctx)
     return render_to_response('favorites/favorite_move.html', ctx)
 
@@ -310,7 +340,7 @@ def toggle_share_favorite(request, favorite_id):
         if form.is_valid():
             favorite.shared = False if favorite.shared else True  # toggle
             favorite.save()
-            return redirect(request.GET.get('next', '/'))
+            return redirect(_get_next(request))
     else:
         form = ValidationForm()
     ctx = {'favorite': favorite}
