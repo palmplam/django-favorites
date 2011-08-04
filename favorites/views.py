@@ -1,7 +1,7 @@
 import urlparse
 
 from django.views.generic.list_detail import object_list, object_detail
-from django.shortcuts import get_object_or_404, redirect, render_to_response
+from django.shortcuts import get_object_or_404, redirect, render,  render_to_response
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
 from django.template import RequestContext
@@ -280,22 +280,14 @@ def move_favorite(request, object_id):
             favorite.folder = folder
             favorite.save()
             return redirect(_get_next(request))
-    if favorite.folder is None:
-        folder_id = 0
-    else:
-        folder_id = favorite.folder.pk
 
-    choices = [(0, '')]
-    choices.extend(Folder.objects.filter(user=request.user).order_by('name').values_list('pk', 'name'))
-    form = UpdateFavoriteForm(choices=choices,
-                              initial={'folder': folder_id,
-                                       'object_id': favorite.pk})
-
-    ctx = {'form': form,
-           'favorite': favorite,
-           'next': _get_next(request)}
-    ctx = RequestContext(request, ctx)
-    return render_to_response('favorites/favorite_move.html', ctx)
+    dictionary = {
+    'favorite': favorite,
+    'next': _get_next(request),
+    }
+    return render(request,
+                  'favorites/favorite_move.html',
+                  dictionary)
 
 
 @login_required
