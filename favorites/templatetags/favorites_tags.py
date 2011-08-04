@@ -9,7 +9,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.template.defaulttags import URLNode
 
 from favorites.models import Favorite, Folder
-from favorites.forms import UpdateFavoriteForm
+from favorites.forms import UpdateFavoriteForm, ValidationForm
 
 
 register = template.Library()
@@ -144,9 +144,13 @@ def move_favorite_widget(context, favorite): # FIXME next url should be a parame
     choices = [(0, '')]
     choices.extend(Folder.objects.filter(user=user).order_by('name').values_list('pk', 'name'))
     folder_id = favorite.folder.pk if favorite.folder else 0
-    form = UpdateFavoriteForm(choices=choices,
-                              initial={'folder': folder_id,
-                                       'object_id': favorite.pk})
+    print '>>>', choices
+    if len(choices) == 1:
+        form = ValidationForm()
+    else:
+        form = UpdateFavoriteForm(choices=choices,
+                                  initial={'folder': folder_id,
+                                           'object_id': favorite.pk})
     return {'form': form,
             'favorite': favorite,
             'next': path,

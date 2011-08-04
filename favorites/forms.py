@@ -29,7 +29,7 @@ class FolderForm(forms.Form):
 
 class CreateFavoriteForm(ObjectHiddenForm):
     """Form to confirm favorite creation"""
-    folder = forms.ChoiceField(required=True)
+    folder = forms.ChoiceField()
 
     def __init__(self, choices, **kwargs):
         super(CreateFavoriteForm, self).__init__(**kwargs)

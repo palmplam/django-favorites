@@ -17,7 +17,7 @@ from django.core.urlresolvers import reverse
 from favorites.models import Favorite
 from favorites.models import Folder
 
-from favorites.forms import ObjectIdForm
+from favorites.forms import ObjectIdForm, ObjectHiddenForm
 from favorites.forms import FolderForm
 from favorites.forms import CreateFavoriteForm
 from favorites.forms import UpdateFavoriteForm
@@ -175,8 +175,10 @@ def create_favorite(request,
         initial = {'app_label': app_label,
                    'object_name': object_name,
                    'object_id': object_id}
-
-        form = CreateFavoriteForm(choices=choices, initial=initial)
+        if len(choices) == 1:
+            form = ObjectHiddenForm(initial=initial)
+        else:
+            form = CreateFavoriteForm(choices=choices, initial=initial)
 
     model = get_model(app_label, object_name)
     if model is None:
