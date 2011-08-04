@@ -144,7 +144,6 @@ def move_favorite_widget(context, favorite): # FIXME next url should be a parame
     choices = [(0, '')]
     choices.extend(Folder.objects.filter(user=user).order_by('name').values_list('pk', 'name'))
     folder_id = favorite.folder.pk if favorite.folder else 0
-    print '>>>', choices
     if len(choices) == 1:
         form = ValidationForm()
     else:
