@@ -235,7 +235,7 @@ def delete_favorite_for_object(request,
 
     ctx = {'form': form, 'object': object, 'next': _get_next(request)}
     ctx = RequestContext(request, ctx)
-    return render_to_response('favorites/confirm_favorite_delete.html', ctx)
+    return render_to_response('favorites/favorite_delete.html', ctx)
 
 
 @login_required
