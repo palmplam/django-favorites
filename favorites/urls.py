@@ -22,9 +22,6 @@ urlpatterns = patterns("",
 
                        # delete
                        url(r'^favorite/delete/(?P<object_id>\d+)$',
-                           'favorites.views.delete_favorite_confirmation',
-                           name='delete-favorite-confirmation'),
-                       url(r'^favorite/delete/$',
                            'favorites.views.delete_favorite',
                            name='delete-favorite'),
                        url(r'^favorite/add/$',
