@@ -125,7 +125,7 @@ class FolderDeleteTests(BaseFavoritesTestCase):
         godzilla.delete()
 
     def test_delete_not_owned_folder(self):
-        """Try to delete a folder owned by someone else""" 
+        """Try to delete a folder owned by someone else"""
         godzilla = self.user('godzilla')
         folder = Folder(name='japan', user=godzilla)
         folder.save()
@@ -244,7 +244,7 @@ class FavoriteListTests(BaseFavoritesTestCase):
         godzilla.delete()
         leviathan.delete()
 
-    def test_credentials(self): 
+    def test_credentials(self):
         """user should be logged in"""
         response = self.client.get('/favorites/')
         self.assertEquals(response.status_code, 302)
@@ -315,7 +315,7 @@ class AddFavoriteTests(BaseFavoritesTestCase):
         dummy.save()
         response = self.client.post('/favorite/add/%s/%s/%s' % ('favorites',
                                                                 'dummymodel',
-                                                                dummy.pk), 
+                                                                dummy.pk),
                                     {'app_label': 'favorites',
                                      'object_name': 'dummymodel',
                                      'object_id': dummy.pk,
@@ -330,7 +330,7 @@ class AddFavoriteTests(BaseFavoritesTestCase):
     def test_bad_model(self):
         godzilla = self.user('godzilla')
         self.client.login(username='godzilla', password='godzilla')
-        response = self.client.post('/favorite/add/foo/bar/123', 
+        response = self.client.post('/favorite/add/foo/bar/123',
                                     {'app_label': 'foo',
                                      'object_name': 'bar',
                                      'object_id': 123,
@@ -397,7 +397,7 @@ class DeleteFavoriteTests(BaseFavoritesTestCase):
 
 
 class DeleteFavoriteForObjectConfirmation(BaseFavoritesTestCase):
-    """Tests for delete-favorites-confirmation-for-object"""
+    """Tests for delete-favorite-for-object"""
     def test_login_required(self):
         """the url is available only to logged user"""
         response = self.client.get('/favorite/delete/foo/bar/123')
@@ -622,7 +622,7 @@ class MoveFavoriteTests(BaseFavoritesTestCase):
         godzilla.delete()
         for folder in folders:
             folder.delete()
-        dummy.delete()         
+        dummy.delete()
 
     def test_object_does_exists(self):
         """If the object does not exists the server
@@ -631,7 +631,7 @@ class MoveFavoriteTests(BaseFavoritesTestCase):
         self.client.login(username='godzilla', password='godzilla')
         response = self.client.get('/favorite/move/1')
         self.assertEquals(response.status_code, 404)
-        godzilla.delete()        
+        godzilla.delete()
 
     def test_invalid_user(self):
         """If the user is not the owner of the object,
@@ -658,7 +658,7 @@ class MoveFavoriteTests(BaseFavoritesTestCase):
         favorite = Favorite.objects.create_favorite(dummy, godzilla)
         folder = Folder(name="japan", user=godzilla)
         folder.save()
-        response = self.client.post('/favorite/move/%s' % favorite.pk, 
+        response = self.client.post('/favorite/move/%s' % favorite.pk,
                                     {'object_id': favorite.pk, 'folder': folder.pk})
         self.assertEquals(response.status_code, 302)
         object = Favorite.objects.get(pk=favorite.pk)
@@ -669,7 +669,7 @@ class MoveFavoriteTests(BaseFavoritesTestCase):
         dummy.delete()
 
     def test_submit_invalid(self):
-        """If the user try to move an object to a folder owned 
+        """If the user try to move an object to a folder owned
         by another user the server should show the form again. It handles
         cases where the user provide a complete invalid folder id."""
         godzilla = self.user('godzilla')
@@ -680,7 +680,7 @@ class MoveFavoriteTests(BaseFavoritesTestCase):
         favorite = Favorite.objects.create_favorite(dummy, godzilla)
         folder = Folder(name="china", user=leviathan)
         folder.save()
-        response = self.client.post('/favorite/move/%s' % favorite.pk, 
+        response = self.client.post('/favorite/move/%s' % favorite.pk,
                                     {'object_id': favorite.pk, 'folder': folder.pk})
         self.assertEquals(response.status_code, 200)
         folder.delete()
@@ -697,7 +697,7 @@ class MoveFavoriteTests(BaseFavoritesTestCase):
         dummy = DummyModel()
         dummy.save()
         favorite = Favorite.objects.create_favorite(dummy, godzilla)
-        response = self.client.post('/favorite/move/%s' % favorite.pk, 
+        response = self.client.post('/favorite/move/%s' % favorite.pk,
                                     {'object_id': favorite.pk, 'folder': 1})
         self.assertEquals(response.status_code, 200)
         favorite.delete()
@@ -712,7 +712,7 @@ class MoveFavoriteTests(BaseFavoritesTestCase):
         dummy = DummyModel()
         dummy.save()
         favorite = Favorite.objects.create_favorite(dummy, godzilla)
-        response = self.client.post('/favorite/move/%s' % favorite.pk, 
+        response = self.client.post('/favorite/move/%s' % favorite.pk,
                                     {'object_id': favorite.pk, 'folder': 0})
         self.assertEquals(response.status_code, 302)
         object = Favorite.objects.get(pk=favorite.pk)
@@ -728,7 +728,7 @@ class ContentTypeByFolderList(BaseFavoritesTestCase):
         self.assertEquals(response.status_code, 302)
 
     def test_invalid_model(self):
-        """if we try to list favorites for a model that does not 
+        """if we try to list favorites for a model that does not
         exists the server should return a 404 error"""
         godzilla = self.user('godzilla')
         self.client.login(username='godzilla', password='godzilla')

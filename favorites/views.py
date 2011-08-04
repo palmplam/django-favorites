@@ -103,7 +103,7 @@ def create_favorite(request,
     creation. It raise a 404 exception if there is not such object.
     If it's a POST creates the favorite object if there isn't
     any such favorite already. If validation fails the it returns the
-    with an insightful error. If the validation succeed the favorite is 
+    with an insightful error. If the validation succeed the favorite is
     added to user profile and a redirection is returned"""
     choices = [(0, '')]
     query = Folder.objects.filter(user=request.user)
@@ -196,10 +196,10 @@ def delete_favorite(request):
 
 
 @login_required
-def delete_favorite_confirmation_for_object(request,
-                                            app_label,
-                                            object_name,
-                                            object_id):
+def delete_favorite_for_object(request,
+                               app_label,
+                               object_name,
+                               object_id):
     """Renders a formular to get confirmation to unfavorite the
     object represented by `app_label`, `object_name` and `object_id`.
     It raise a 404 exception if there is not such object."""
@@ -236,7 +236,7 @@ def delete_favorite_confirmation(request, object_id):
 
     ctx = {'form': form, 'object': object, 'next': request.GET.get('next', '/')}
     ctx = RequestContext(request, ctx)
-    return render_to_response('favorites/confirm_favorite_delete.html', ctx)    
+    return render_to_response('favorites/confirm_favorite_delete.html', ctx)
 
 @login_required
 def move_favorite(request, object_id):
@@ -249,7 +249,7 @@ def move_favorite(request, object_id):
         choices = [(0, '')]
         choices.extend(Folder.objects.filter(user=request.user).order_by('name').values_list('pk', 'name'))
         form = UpdateFavoriteForm(choices=choices, data=request.POST)
-    
+
         if form.is_valid():
             folder_id = form.cleaned_data['folder']
             if folder_id == '0':
