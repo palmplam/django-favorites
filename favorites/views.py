@@ -33,7 +33,7 @@ def _validate_next_parameter(request, next):
 # Taken from https://github.com/ericflo/django-avatar/blob/master/avatar/views.py
 def _get_next(request):
     """
-    The part that's the least straightforward about views in this module is how they 
+    The part that's the least straightforward about views in this module is how they
     determine their redirects after they have finished computation.
 
     In short, they will try and determine the next place to go in the following order:
@@ -211,21 +211,6 @@ def favorite_list_for_model_class(request, model_class, **kwargs):
 
 
 @login_required
-def delete_favorite(request):
-    if request.method == 'POST':
-        form = ObjectIdForm(request.POST)
-        if form.is_valid():
-            object_id = form.cleaned_data['object_id']
-            favorite = get_object_or_404(Favorite, pk=object_id)
-            if request.user == favorite.user:
-                favorite.delete()
-                return redirect(_get_next(request))
-            else:
-                return HttpResponseForbidden()
-    return HttpResponseBadRequest()
-
-
-@login_required
 def delete_favorite_for_object(request,
                                app_label,
                                object_name,
@@ -254,19 +239,25 @@ def delete_favorite_for_object(request,
 
 
 @login_required
-def delete_favorite_confirmation(request, object_id):
+def delete_favorite(request, object_id):
     """Renders a formular to get confirmation to unfavorite the object
     the favorite that has ``object_id`` as id. It raise a 404 if there
-    is not such a object, a BadRequest if the favorite is not owned by
-    current user"""
+    is not such a object, a HttpResponseForbidden if the favorite is not
+    owned by current user"""
     favorite = get_object_or_404(Favorite, pk=object_id)
-    object = favorite.content_object
-
-    form = ObjectIdForm(initial={'object_id': favorite.pk})
-
-    ctx = {'form': form, 'object': object, 'next': _get_next(request)}
+    if request.method == 'POST':
+        form = ValidationForm(request.POST)
+        if form.is_valid():
+            if request.user == favorite.user:
+                favorite.delete()
+                return redirect(_get_next(request))
+            else:
+                return HttpResponseForbidden()
+    instance = favorite.content_object
+    form = ValidationForm()
+    ctx = {'form': form, 'object': instance, 'next': _get_next(request)}
     ctx = RequestContext(request, ctx)
-    return render_to_response('favorites/confirm_favorite_delete.html', ctx)
+    return render_to_response('favorites/favorite_delete.html', ctx)
 
 @login_required
 def move_favorite(request, object_id):
