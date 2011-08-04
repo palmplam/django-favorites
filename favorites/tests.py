@@ -344,16 +344,8 @@ class DeleteFavoriteTests(BaseFavoritesTestCase):
     def test_login_required(self):
         """The user should be logged in to be able to delete a
         favorite."""
-        response = self.client.post('/favorite/delete/')
+        response = self.client.post(reverse('delete-favorite', kwargs={'object_id': 123}))
         self.assertEquals(response.status_code, 302)
-
-    def test_get_fails(self):
-        """GET method is not available."""
-        godzilla = self.user('godzilla')
-        self.client.login(username='godzilla', password='godzilla')
-        response = self.client.get('/favorite/delete/')
-        self.assertEquals(response.status_code, 400)
-        godzilla.delete()
 
     def test_submit(self):
         """Submit a valid form."""
@@ -362,7 +354,7 @@ class DeleteFavoriteTests(BaseFavoritesTestCase):
         dummy = DummyModel()
         dummy.save()
         favorite = Favorite.objects.create_favorite(dummy, godzilla)
-        response = self.client.post('/favorite/delete/',
+        response = self.client.post(reverse('delete-favorite', kwargs={'object_id': favorite.pk}),
                                     {'object_id': favorite.pk})
         self.assertEquals(response.status_code, 302)
         self.assertEquals(len(Favorite.objects.all()), 0)
@@ -389,7 +381,7 @@ class DeleteFavoriteTests(BaseFavoritesTestCase):
         dummy = DummyModel()
         dummy.save()
         favorite = Favorite.objects.create_favorite(dummy, leviathan)
-        response = self.client.post('/favorite/delete/',
+        response = self.client.post(reverse('delete-favorite', kwargs={'object_id': favorite.pk}),
                                     {'object_id': favorite.pk})
         self.assertEquals(response.status_code, 403)
         favorite.delete()
