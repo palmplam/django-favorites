@@ -1,7 +1,7 @@
 import urlparse
 
 from django.views.generic.list_detail import object_list, object_detail
-from django.shortcuts import get_object_or_404, redirect, render,  render_to_response
+from django.shortcuts import get_object_or_404, redirect, render, render_to_response
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
 from django.template import RequestContext
@@ -373,5 +373,4 @@ def content_type_list(request, app_label, object_name, folder_id=None):
     templates.append(dynamic_template)
     # Default
     templates.append('favorites/list_favorites_content_type.html')
-    context_data = RequestContext(request, context_data)
-    return render_to_response(templates, context_data)
+    return render(request, templates, context_data)
