@@ -182,7 +182,7 @@ def create_favorite(request,
 
     model = get_model(app_label, object_name)
     if model is None:
-        return HttpResponseNotFound()
+        return HttpResponseBadRequest()
     object = get_object_or_404(model, pk=object_id)
 
     ctx = {'form': form, 'object': object, 'next':_get_next(request)}
@@ -343,7 +343,7 @@ def content_type_list(request, app_label, object_name, folder_id=None):
     """
     model = get_model(app_label, object_name)
     if model is None:
-        return HttpResponseNotFound()
+        return HttpResponseBadRequest()
     content_type = ContentType.objects.get_for_model(model)
     
     filters = {"content_type":content_type, "user":request.user}

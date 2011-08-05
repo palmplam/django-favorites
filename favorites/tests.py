@@ -268,14 +268,14 @@ class AddFavoriteTests(BaseFavoritesTestCase):
         godzilla = self.user('godzilla')
         self.client.login(username='godzilla', password='godzilla')
         response = self.client.get('/favorite/add/foo/bar/1')
-        self.assertEquals(response.status_code, 404)
+        self.assertEquals(response.status_code, 400)
         godzilla.delete()
 
     def test_object_does_not_exists(self):
         godzilla = self.user('godzilla')
         self.client.login(username='godzilla', password='godzilla')
         response = self.client.get('/favorite/add/favorites/dummy/1')
-        self.assertEquals(response.status_code, 404)
+        self.assertEquals(response.status_code, 400)
         godzilla.delete()
 
 
@@ -569,7 +569,7 @@ class FavoriteContentTypeList(BaseFavoritesTestCase):
 
         # tests
         response = self.client.get('/favorite/favorites/foo/')
-        self.assertEquals(response.status_code, 404)
+        self.assertEquals(response.status_code, 400)
 
         godzilla.delete()
 
@@ -713,11 +713,11 @@ class ContentTypeByFolderList(BaseFavoritesTestCase):
 
     def test_invalid_model(self):
         """if we try to list favorites for a model that does not
-        exists the server should return a 404 error"""
+        exists the server should return a 400 error"""
         godzilla = self.user('godzilla')
         self.client.login(username='godzilla', password='godzilla')
         response = self.client.get('/favorite/foo/bar/folder/1')
-        self.assertEquals(response.status_code, 404)
+        self.assertEquals(response.status_code, 400)
         godzilla.delete()
 
     def test_invalid_folder(self):
