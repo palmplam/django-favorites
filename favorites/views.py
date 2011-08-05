@@ -333,54 +333,45 @@ def toggle_share_favorite(request, favorite_id):
     return render_to_response('favorites/favorite_toggle_share.html', ctx)
 
 
-# Moar listing
-
 @login_required
-def content_type_list(request, app_label, object_name):
+def content_type_list(request, app_label, object_name, folder_id=None):
+    """
+    Retrieve favorites for a user by content_type.
+    
+    The optional folder_id parameter will be used to filter the favorites, if 
+    passed.
+    """
     model = get_model(app_label, object_name)
     if model is None:
         return HttpResponseNotFound()
     content_type = ContentType.objects.get_for_model(model)
-
-    favorites = Favorite.objects.filter(content_type=content_type,
-                                        user=request.user)
-    ctx = {'favorites': favorites,
-           'app_label': app_label,
-           'object_name': object_name}
-    ctx = RequestContext(request, ctx)
-
-    custom_template = 'favorites/list_favorites_%s_%s.html' % (app_label,
-                                                               object_name)
-
-    return render_to_response([custom_template,
-                               'favorites/list_favorites_content_type.html'],
-                              ctx)
-
-
-@login_required
-def content_type_by_folder_list(request, app_label, object_name, folder_id):
-    model = get_model(app_label, object_name)
-    if model is None:
-        return HttpResponseNotFound()
-    content_type = ContentType.objects.get_for_model(model)
-
-    folder = get_object_or_404(Folder, pk=folder_id)
-
-    if not folder.user == request.user:
-        return HttpResponseForbidden()
-
-    favorites = Favorite.objects.filter(content_type=content_type,
-                                        user=request.user,
-                                        folder=folder)
-    ctx = {'favorites': favorites,
-           'app_label': app_label,
-           'object_name': object_name,
-           'folder': folder}
-    ctx = RequestContext(request, ctx)
-
-    custom_template = 'favorites/list_favorites_%s_%s_by_folder.html' % (app_label,
-                                                               object_name)
-
-    return render_to_response([custom_template,
-                               'favorites/list_favorites_content_type_by_folder.html'],
-                              ctx)
+    
+    filters = {"content_type":content_type, "user":request.user}
+    templates = []
+    context_data = {
+        'app_label': app_label,
+        'object_name': object_name,
+        'folder': None
+    }
+    
+    if folder_id:
+        folder = get_object_or_404(Folder, pk=folder_id)
+        if not folder.user == request.user:
+            return HttpResponseForbidden()
+        filters["folder"] = folder
+        context_data["folder"] = folder
+        dynamic_template = 'favorites/list_favorites_%s_%s_by_folder.html' \
+                                                      % (app_label, object_name)
+        templates.append(dynamic_template)
+    
+    favorites = Favorite.objects.filter(**filters)
+    context_data["favorites"] = favorites
+    
+    # Set content_type specific and default templates
+    dynamic_template = 'favorites/list_favorites_%s_%s.html' % (app_label,
+                                                                    object_name)
+    templates.append(dynamic_template)
+    # Default
+    templates.append('favorites/list_favorites_content_type.html')
+    context_data = RequestContext(request, context_data)
+    return render_to_response(templates, context_data)

@@ -46,7 +46,7 @@ urlpatterns = patterns("",
                            'favorites.views.content_type_list',
                            name='content-type-list'),
                        url(r'^favorite/(?P<app_label>\w+)/(?P<object_name>\w+)/folder/(?P<folder_id>\d+)$',
-                           'favorites.views.content_type_by_folder_list',
+                           'favorites.views.content_type_list',
                            name='content-type-by-folder-list'),
 
                        # folders urls
