@@ -186,8 +186,7 @@ def create_favorite(request,
     obj = get_object_or_404(model, pk=object_id)
 
     ctx = {'form': form, 'object': obj, 'next':_get_next(request)}
-    ctx = RequestContext(request, ctx)
-    return render_to_response('favorites/favorite_add.html', ctx)
+    return render(request, 'favorites/favorite_add.html', ctx)
 
 
 @login_required
