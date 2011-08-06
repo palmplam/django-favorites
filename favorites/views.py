@@ -124,10 +124,7 @@ def list_favorites(request):
 
 
 @login_required
-def create_favorite(request,
-                    app_label,
-                    object_name,
-                    object_id):
+def create_favorite(request, app_label, object_name, object_id):
     """Renders a formular to get confirmation to favorite the
     object represented by `app_label`, `object_name` and `object_id`
     creation. It raise a 404 exception if there is not such object.
@@ -135,10 +132,8 @@ def create_favorite(request,
     any such favorite already. If validation fails the it returns the
     with an insightful error. If the validation succeed the favorite is
     added to user profile and a redirection is returned"""
-    choices = [(0, '')]
     query = Folder.objects.filter(user=request.user)
-    folder_choices = query.order_by('name').values_list('pk', 'name')
-    choices.extend(folder_choices)
+    choices = query.order_by('name').values_list('pk', 'name')
 
     if request.method == 'POST':
         form = CreateFavoriteForm(choices=choices, data=request.POST)
@@ -147,15 +142,14 @@ def create_favorite(request,
             app_label = form.cleaned_data['app_label']
             object_name = form.cleaned_data['object_name']
             object_id = form.cleaned_data['object_id']
-
             folder_id = form.cleaned_data['folder']
-
-            if folder_id == '0':
-                folder = None
-            else:
+            
+            if folder_id:
                 folder = get_object_or_404(Folder, pk=folder_id)
                 if request.user != folder.user:
                     return HttpResponseForbidden()
+            else:
+                folder = None
 
             model = get_model(app_label, object_name)
             try:
