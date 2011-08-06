@@ -1,0 +1,45 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2011-08-06 18:11+0200\n"
+"PO-Revision-Date: 2011-08-06 18:11+0200\n"
+"Last-Translator: Yohan Boniface <y.boniface@liberation.fr>\n"
+"Language-Team: Libération <devweb@liberation.fr>\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1)\n"
+
+#: forms.py:56
+msgid "Store in a folder?"
+msgstr "Ranger dans un dossier ?"
+
+#: forms.py:57
+msgid "No folder"
+msgstr "Non, aucun dossier"
+
+#: models.py:34
+msgid "favorite"
+msgstr "favori"
+
+#: models.py:35
+msgid "favorites"
+msgstr "favoris"
+
+#: templatetags/favorites_tags.py:68
+#, python-format
+msgid "%s tag requires exactly four arguments"
+msgstr ""
+
+#: templatetags/favorites_tags.py:70
+#, python-format
+msgid "third argument to %s tag must be 'as'"
+msgstr ""
