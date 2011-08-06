@@ -183,9 +183,9 @@ def create_favorite(request,
     model = get_model(app_label, object_name)
     if model is None:
         return HttpResponseBadRequest()
-    object = get_object_or_404(model, pk=object_id)
+    obj = get_object_or_404(model, pk=object_id)
 
-    ctx = {'form': form, 'object': object, 'next':_get_next(request)}
+    ctx = {'form': form, 'object': obj, 'next':_get_next(request)}
     ctx = RequestContext(request, ctx)
     return render_to_response('favorites/favorite_add.html', ctx)
 
