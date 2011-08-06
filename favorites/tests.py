@@ -335,7 +335,7 @@ class AddFavoriteTests(BaseFavoritesTestCase):
                                      'object_name': 'bar',
                                      'object_id': 123,
                                      'folder': 0})
-        self.assertEquals(response.status_code, 404)
+        self.assertEquals(response.status_code, 400)
         godzilla.delete()
 
 

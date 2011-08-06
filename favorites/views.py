@@ -161,7 +161,7 @@ def create_favorite(request,
             try:
                 content_type = ContentType.objects.get_for_model(model)
             except AttributeError: # there no such model
-                return HttpResponseNotFound()
+                return HttpResponseBadRequest()
             obj = content_type.get_object_for_this_type(pk=object_id)
 
             if not Favorite.objects.filter(content_type=content_type,
