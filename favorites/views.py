@@ -228,9 +228,7 @@ def delete_favorite_for_object(request,
     form = ObjectIdForm(initial={'object_id': favorite.pk})
     
     ctx = {'form': form, 'object': obj, 'next': _get_next(request)}
-    ctx = RequestContext(request, ctx)
-    return render_to_response('favorites/favorite_delete.html', ctx)
-
+    return render(request, 'favorites/favorite_delete.html', ctx)
 
 @login_required
 def delete_favorite(request, object_id):
