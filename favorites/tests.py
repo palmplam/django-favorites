@@ -320,7 +320,7 @@ class AddFavoriteTests(BaseFavoritesTestCase):
                                      'object_name': 'dummymodel',
                                      'object_id': dummy.pk,
                                      'folder': folder.pk})
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 403)
         # FIXME: check that the form has an error
         godzilla.delete()
         folder.delete()
