@@ -214,21 +214,20 @@ def delete_favorite_for_object(request,
     object represented by `app_label`, `object_name` and `object_id`.
     It raise a 404 exception if there is not such object."""
     model = get_model(app_label, object_name)
-    try:
-        object = get_object_or_404(model, pk=object_id)
-    except AttributeError: # the model does not exists
-        return HttpResponseNotFound()
-
-    query = Favorite.objects.favorites_for_object(object, request.user)
-
+    if model is None:
+        return HttpResponseBadRequest()
+    obj = get_object_or_404(model, pk=object_id)
+    
+    query = Favorite.objects.favorites_for_object(obj, request.user)
+    
     try:
         favorite = query[0]
     except:
         return HttpResponseNotFound()
-
+    
     form = ObjectIdForm(initial={'object_id': favorite.pk})
-
-    ctx = {'form': form, 'object': object, 'next': _get_next(request)}
+    
+    ctx = {'form': form, 'object': obj, 'next': _get_next(request)}
     ctx = RequestContext(request, ctx)
     return render_to_response('favorites/favorite_delete.html', ctx)
 

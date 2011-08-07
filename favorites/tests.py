@@ -397,11 +397,11 @@ class DeleteFavoriteForObjectConfirmation(BaseFavoritesTestCase):
         self.assertEquals(response.status_code, 302)
 
     def test_model_does_not_exists(self):
-        """should return 404 error if the model does not exists"""
+        """should return 400 error if the model does not exists"""
         godzilla = self.user('godzilla')
         self.client.login(username='godzilla', password='godzilla')
         response = self.client.get('/favorite/delete/foo/bar/123')
-        self.assertEquals(response.status_code, 404)
+        self.assertEquals(response.status_code, 400)
         godzilla.delete()
 
     def test_object_does_not_exists(self):
