@@ -65,7 +65,7 @@ def folder_add(request):
             return redirect(_get_next(request))
     form = FolderForm()
     next = request.GET.get('next', None)
-    return render_to_response('favorites/create_folder.html',
+    return render_to_response('favorites/folder_add.html',
                               RequestContext(request, {'form': form,
                                                        'next': next}))
 
@@ -272,7 +272,7 @@ def favorite_move_to_folder(request, favorite_id, folder_id):
            'folder': folder,
            'next': next}
     ctx = RequestContext(request, ctx)
-    return render_to_response('favorites/favorite_move_confirmation.html', ctx)
+    return render_to_response('favorites/favorite_move_to_folder.html', ctx)
 
 
 @login_required
@@ -321,7 +321,7 @@ def favorite_content_type_and_folder_list(request, app_label, object_name, folde
             return HttpResponseForbidden()
         filters["folder"] = folder
         context_data["folder"] = folder
-        dynamic_template = 'favorites/list_favorites_%s_%s_by_folder.html' \
+        dynamic_template = 'favorites/favorite_%s_%s_by_folder_list.html' \
                                                       % (app_label, object_name)
         templates.append(dynamic_template)
 
@@ -329,9 +329,9 @@ def favorite_content_type_and_folder_list(request, app_label, object_name, folde
     context_data["favorites"] = favorites
 
     # Set content_type specific and default templates
-    dynamic_template = 'favorites/list_favorites_%s_%s.html' % (app_label,
+    dynamic_template = 'favorites/favorite_%s_%s_list.html' % (app_label,
                                                                     object_name)
     templates.append(dynamic_template)
     # Default
-    templates.append('favorites/list_favorites_content_type.html')
+    templates.append('favorites/favorite_content_type_list.html')
     return render(request, templates, context_data)

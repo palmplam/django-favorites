@@ -137,8 +137,8 @@ def url_delete_from_favorites_confirmation(context, object):
     return target_url
 
 
-@register.inclusion_tag('favorites/move_favorite_widget.html', takes_context=True)
-def move_favorite_widget(context, favorite): # FIXME next url should be a parameter
+@register.inclusion_tag('favorites/favorite_move_widget.html', takes_context=True)
+def favorite_move_widget(context, favorite):
     user = context['request'].user
     path = context['request'].path
     choices = [(0, '')]
