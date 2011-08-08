@@ -28,7 +28,7 @@ urlpatterns = patterns("",
                            'favorites.views.favorite_move',
                            name='favorite_move'),
                        # move
-                       url(r'^favorite/(?P<favorite_id>\d+)/move/(?P<folder_id>\d+)$',
+                       url(r'^favorite/(?P<favorite_id>\d+)/move/(?P<folder_id>\d*)$',
                            'favorites.views.favorite_move_to_folder',
                            name='favorite_move_to_folder'),
                        # toggle share
