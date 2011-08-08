@@ -143,7 +143,7 @@ def create_favorite(request, app_label, object_name, object_id):
             object_name = form.cleaned_data['object_name']
             object_id = form.cleaned_data['object_id']
             folder_id = form.cleaned_data['folder']
-            
+
             if folder_id:
                 folder = get_object_or_404(Folder, pk=folder_id)
                 if request.user != folder.user:
@@ -158,21 +158,24 @@ def create_favorite(request, app_label, object_name, object_id):
                 return HttpResponseBadRequest()
             obj = content_type.get_object_for_this_type(pk=object_id)
 
-            if not Favorite.objects.filter(content_type=content_type,
+            query = Favorite.objects.filter(content_type=content_type,
                                            object_id=object_id,
-                                           user=request.user):
+                                           user=request.user)
+            count = query.count()
+            if count == 0:
                 Favorite.objects.create_favorite(obj,
                                                  request.user,
                                                  folder)
-            return redirect(_get_next(request))
+                return redirect(_get_next(request))
+            else:
+                favorite = query[0]
+                ctx = {'object': obj, 'next': _get_next(request), 'favorite': favorite}
+                return render(request, 'favorites/favorite_already_favorite.html', ctx)
     else:
         initial = {'app_label': app_label,
                    'object_name': object_name,
                    'object_id': object_id}
-        if len(choices) == 1:
-            form = ObjectHiddenForm(initial=initial)
-        else:
-            form = CreateFavoriteForm(choices=choices, initial=initial)
+        form = CreateFavoriteForm(choices=choices, initial=initial)
 
     model = get_model(app_label, object_name)
     if model is None:
@@ -217,16 +220,16 @@ def delete_favorite_for_object(request,
     if model is None:
         return HttpResponseBadRequest()
     obj = get_object_or_404(model, pk=object_id)
-    
+
     query = Favorite.objects.favorites_for_object(obj, request.user)
-    
+
     try:
         favorite = query[0]
     except:
         return HttpResponseNotFound()
-    
+
     form = ObjectIdForm(initial={'object_id': favorite.pk})
-    
+
     ctx = {'form': form, 'object': obj, 'next': _get_next(request)}
     return render(request, 'favorites/favorite_delete.html', ctx)
 
@@ -327,15 +330,15 @@ def toggle_share_favorite(request, favorite_id):
 def content_type_list(request, app_label, object_name, folder_id=None):
     """
     Retrieve favorites for a user by content_type.
-    
-    The optional folder_id parameter will be used to filter the favorites, if 
+
+    The optional folder_id parameter will be used to filter the favorites, if
     passed.
     """
     model = get_model(app_label, object_name)
     if model is None:
         return HttpResponseBadRequest()
     content_type = ContentType.objects.get_for_model(model)
-    
+
     filters = {"content_type":content_type, "user":request.user}
     templates = []
     context_data = {
@@ -343,7 +346,7 @@ def content_type_list(request, app_label, object_name, folder_id=None):
         'object_name': object_name,
         'folder': None
     }
-    
+
     if folder_id:
         folder = get_object_or_404(Folder, pk=folder_id)
         if not folder.user == request.user:
@@ -353,10 +356,10 @@ def content_type_list(request, app_label, object_name, folder_id=None):
         dynamic_template = 'favorites/list_favorites_%s_%s_by_folder.html' \
                                                       % (app_label, object_name)
         templates.append(dynamic_template)
-    
+
     favorites = Favorite.objects.filter(**filters)
     context_data["favorites"] = favorites
-    
+
     # Set content_type specific and default templates
     dynamic_template = 'favorites/list_favorites_%s_%s.html' % (app_label,
                                                                     object_name)
