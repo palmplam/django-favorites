@@ -2,7 +2,7 @@
 {% if favorites %}
 <ul>
     {% for favorite in favorites %}
-    <li>{% if favorite.shared %}[<b>shared</b>] {% endif %}{{favorite}}{% if favorite.folder %}@{{favorite.folder}}{% endif %} [<a href="{% url delete-favorite-confirmation favorite.pk %}?next={% url favorites %}">remove</a>][<a href="{% url move-favorite favorite.id %}?next={% url favorites %}">move</a>][<a href="{% url move-favorite-confirmation favorite.pk 1 %}?next=/library/favorites/">move to folder@{pk=1}</a>][<a href="{% url toggle-share-favorite favorite.pk %}?next=/library/favorites/">toggle share</a>]</li>
+    <li>{% if favorite.shared %}[<b>shared</b>] {% endif %}{{favorite}}{% if favorite.folder %}@{{favorite.folder}}{% endif %} [<a href="{% url delete-favorite favorite.pk %}?next={% url favorites %}">remove</a>][<a href="{% url move-favorite favorite.id %}?next={% url favorites %}">move</a>][<a href="{% url move-favorite-confirmation favorite.pk 1 %}?next=/library/favorites/">move to folder@{pk=1}</a>][<a href="{% url toggle-share-favorite favorite.pk %}?next=/library/favorites/">toggle share</a>]</li>
     {% endfor %}
 </ul>
 {% else %}

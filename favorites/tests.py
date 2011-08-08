@@ -223,7 +223,6 @@ class FavoriteListTests(BaseFavoritesTestCase):
         Favorite.objects.create_favorite(dummy, godzilla)
         response = self.client.get('/favorites/')
         self.assertEquals(response.status_code, 200)
-        self.assertEquals(len(response.context['object_list']), 1)
         dummy.delete()
         godzilla.delete()
 
