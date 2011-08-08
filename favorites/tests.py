@@ -367,7 +367,7 @@ class DeleteFavoriteTests(BaseFavoritesTestCase):
 
     def test_login_required(self):
         """The user should be logged in to be able to delete a favorite."""
-        target = reverse('delete-favorite', kwargs={'object_id': 123})
+        target = reverse('favorite-delete', kwargs={'object_id': 123})
         response = self.client.post(target)
         self.assertEquals(response.status_code, 302)
 
@@ -378,7 +378,7 @@ class DeleteFavoriteTests(BaseFavoritesTestCase):
         dummy = DummyModel()
         dummy.save()
         favorite = Favorite.objects.create_favorite(dummy, godzilla)
-        response = self.client.post(reverse('delete-favorite', kwargs={'object_id': favorite.pk}),
+        response = self.client.post(reverse('favorite-delete', kwargs={'object_id': favorite.pk}),
                                     {'object_id': favorite.pk})
         self.assertEquals(response.status_code, 302)
         self.assertEquals(len(Favorite.objects.all()), 0)
@@ -403,7 +403,7 @@ class DeleteFavoriteTests(BaseFavoritesTestCase):
         dummy = DummyModel()
         dummy.save()
         favorite = Favorite.objects.create_favorite(dummy, leviathan)
-        response = self.client.post(reverse('delete-favorite', kwargs={'object_id': favorite.pk}),
+        response = self.client.post(reverse('favorite-delete', kwargs={'object_id': favorite.pk}),
                                     {'object_id': favorite.pk})
         self.assertEquals(response.status_code, 403)
         favorite.delete()
@@ -816,7 +816,7 @@ class MoveFavoriteConfirmation(TestCase):
     def test_login_required(self):
         """User should be logged in"""
         client = Client()
-        target_url = reverse('move-favorite-confirmation',
+        target_url = reverse('favorite_move_to_folder',
                              kwargs={'favorite_id': 1, 'folder_id': 2})
         response = client.get(target_url,
                               follow=True)
@@ -840,7 +840,7 @@ class MoveFavoriteConfirmation(TestCase):
         dummy.save()
         favorite = Favorite.objects.create_favorite(user=user,
                                                     content_object=dummy)
-        target_url = reverse('move-favorite-confirmation',
+        target_url = reverse('favorite_move_to_folder',
                              kwargs={'favorite_id': favorite.pk, 'folder_id': folder.pk})
         client = Client()
         self.assertTrue(client.login(username='user', password='user'))
@@ -861,7 +861,7 @@ class MoveFavoriteConfirmation(TestCase):
         dummy.save()
         favorite = Favorite.objects.create_favorite(user=user2,
                                                     content_object=dummy)
-        target_url = reverse('move-favorite-confirmation',
+        target_url = reverse('favorite_move_to_folder',
                              args=(favorite.pk,
                                    folder.pk))
         client = Client()
@@ -880,7 +880,7 @@ class MoveFavoriteConfirmation(TestCase):
         dummy.save()
         favorite = Favorite.objects.create_favorite(user=user,
                                                     content_object=dummy)
-        target_url = reverse('move-favorite-confirmation',
+        target_url = reverse('favorite_move_to_folder',
                              args=(favorite.pk,
                                    folder.pk))
         client = Client()
@@ -893,7 +893,7 @@ class ToggleShareFavoritesTests(TestCase):
 
     def test_login_required(self):
         """User should be logged in."""
-        target_url = reverse('toggle-share-favorite',
+        target_url = reverse('favorite_toggle_share',
                              kwargs={'favorite_id': 0})
         client = Client()
         response = client.get(target_url, follow=True)
@@ -913,7 +913,7 @@ class ToggleShareFavoritesTests(TestCase):
                                                     content_object=dummy)
         favorite.save()
 
-        target_url = reverse('toggle-share-favorite',
+        target_url = reverse('favorite_toggle_share',
                              kwargs={'favorite_id': favorite.pk,})
 
         client = Client()
@@ -935,7 +935,7 @@ class ToggleShareFavoritesTests(TestCase):
         favorite = Favorite.objects.create_favorite(user=user2,
                                                     content_object=dummy)
         favorite.save()
-        target_url = reverse('toggle-share-favorite',
+        target_url = reverse('favorite_toggle_share',
                              kwargs={'favorite_id': favorite.pk,})
         client = Client()
         self.assertTrue(client.login(username='user', password='user'))
@@ -953,7 +953,7 @@ class ToggleShareFavoritesTests(TestCase):
                                                     content_object=dummy)
         favorite.save()
 
-        target_url = reverse('toggle-share-favorite',
+        target_url = reverse('favorite_toggle_share',
                              kwargs={'favorite_id': favorite.pk,})
 
 

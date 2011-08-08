@@ -1,7 +1,7 @@
-<h1>Folder list [<a href="{% url create-folder %}?next={% url folders %}">add</a>]</h1>
+<h1>Folder list [<a href="{% url folder_add %}?next={% url folder_list %}">add</a>]</h1>
 <ul>
 {% for object in object_list %}
-    <li>{{ object.name }} [<a href="{% url update-folder object.id %}?next={% url folders %}">update</a>][<a href="{% url folder-delete object.id %}?next={% url folders %}">delete</a>]</li>
+    <li>{{ object.name }} [<a href="{% url folder_update object.id %}?next={% url folder_list %}">update</a>][<a href="{% url folder_delete object.id %}?next={% url folder_list %}">delete</a>]</li>
 {% endfor %}
 </ul>
 </a>

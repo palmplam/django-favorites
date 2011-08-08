@@ -56,14 +56,14 @@ def _get_next(request):
 ### FOLDER VIEWS ###########################################################
 
 @login_required
-def list_folder(request):
+def folder_list(request):
     object_list = Folder.objects.filter(user=request.user)
     ctx = RequestContext(request, {'object_list': object_list})
     return render_to_response('favorites/folder_list.html', ctx)
 
 
 @login_required
-def create_folder(request):
+def folder_add(request):
     if request.method == 'POST':
         form = FolderForm(request.POST)
         if form.is_valid():
@@ -78,7 +78,7 @@ def create_folder(request):
 
 
 @login_required
-def update_folder(request, object_id):
+def folder_update(request, object_id):
     folder = get_object_or_404(Folder, pk=object_id)
 
     if folder.user != request.user:
@@ -99,7 +99,7 @@ def update_folder(request, object_id):
 
 
 @login_required
-def delete_folder(request, object_id):
+def folder_delete(request, object_id):
     folder = get_object_or_404(Folder, pk=object_id)
     if request.user != folder.user:
         return HttpResponseForbidden()
@@ -116,7 +116,7 @@ def delete_folder(request, object_id):
 
 
 @login_required
-def list_favorites(request):
+def favorite_list(request):
     object_list = Favorite.objects.favorites_for_user(request.user)
     ctx = {'favorites': object_list}
     ctx = RequestContext(request, ctx)
@@ -124,7 +124,7 @@ def list_favorites(request):
 
 
 @login_required
-def create_favorite(request, app_label, object_name, object_id):
+def favorite_add(request, app_label, object_name, object_id):
     """Renders a formular to get confirmation to favorite the
     object represented by `app_label`, `object_name` and `object_id`
     creation. It raise a 404 exception if there is not such object.
@@ -184,29 +184,7 @@ def create_favorite(request, app_label, object_name, object_id):
 
 
 @login_required
-def favorite_list_for_model_class(request, model_class, **kwargs):
-    """
-    Generic `favorites list` view based on generic object_list
-
-    `model_class` - required valid model class
-
-    Other parameters are same as object_list.
-
-    Example of usage (urls.py):
-        url(r'favorites/my_model/$',
-            'favorites.views.favorite_list', kwargs={
-                'model_class': get_model('my_app.MyModel'),
-                'paginate_by': 25,
-            }, name='favorites-mymodel')
-    """
-    default_queryset = Favorite.objects.favorites_for_model(model_class,
-                                                            request.user)
-    queryset = kwargs.get('queryset', default_queryset)
-    return object_list(request, queryset, **kwargs)
-
-
-@login_required
-def delete_favorite_for_object(request,
+def favorite_delete_for_object(request,
                                app_label,
                                object_name,
                                object_id):
@@ -231,7 +209,7 @@ def delete_favorite_for_object(request,
     return render(request, 'favorites/favorite_delete.html', ctx)
 
 @login_required
-def delete_favorite(request, object_id):
+def favorite_delete(request, object_id):
     """Renders a formular to get confirmation to unfavorite the object
     the favorite that has ``object_id`` as id. It raise a 404 if there
     is not such a object, a HttpResponseForbidden if the favorite is not
@@ -252,7 +230,7 @@ def delete_favorite(request, object_id):
     return render_to_response('favorites/favorite_delete.html', ctx)
 
 @login_required
-def move_favorite(request, object_id):
+def favorite_move(request, object_id):
     """Renders a formular to move a favorite to another folder"""
     favorite = get_object_or_404(Favorite, pk=object_id)
     if not favorite.user == request.user:
@@ -283,8 +261,8 @@ def move_favorite(request, object_id):
 
 
 @login_required
-def move_favorite_confirmation(request, favorite_id, folder_id):
-    """Confirm move before submitting action"""
+def favorite_move_to_folder(request, favorite_id, folder_id):
+    """moves a favorite to a folder provided a get parameter with confirmation"""
     favorite = get_object_or_404(Favorite, pk=favorite_id)
     if request.user != favorite.user:
         return HttpResponseForbidden()
@@ -305,7 +283,7 @@ def move_favorite_confirmation(request, favorite_id, folder_id):
 
 
 @login_required
-def toggle_share_favorite(request, favorite_id):
+def favorite_toggle_share(request, favorite_id):
     """Confirm before submiting the toggle share action"""
     favorite = get_object_or_404(Favorite, pk=favorite_id)
     if request.user != favorite.user:
@@ -324,7 +302,7 @@ def toggle_share_favorite(request, favorite_id):
 
 
 @login_required
-def content_type_list(request, app_label, object_name, folder_id=None):
+def favorite_content_type_and_folder_list(request, app_label, object_name, folder_id=None):
     """
     Retrieve favorites for a user by content_type.
 
