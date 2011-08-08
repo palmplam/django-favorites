@@ -88,9 +88,9 @@ class FolderAddTests(BaseFavoritesTestCase):
         should return a redirect"""
         godzilla = self.user('godzilla')
         self.client.login(username='godzilla', password='godzilla')
-        response = self.client.get('/folder/add/', {'name': 'japan'})
+        response = self.client.post('/folder/add/', {'name': 'japan'})
         self.assertEquals(response.status_code, 302)
-        self.assertEquals(Folder.objects.favorites_for_user(user).count(), 1)
+        self.assertEquals(Folder.objects.filter(user=godzilla).count(), 1)
         Folder.objects.all().delete()
         godzilla.delete()
 
