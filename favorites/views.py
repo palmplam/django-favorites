@@ -236,7 +236,7 @@ def favorite_move(request, object_id):
 
         if form.is_valid():
             folder_id = form.cleaned_data['folder']
-            if folder_id == '0':
+            if folder_id == '':
                 folder = None
             else:
                 folder = get_object_or_404(Folder, pk=folder_id)
@@ -259,11 +259,16 @@ def favorite_move_to_folder(request, favorite_id, folder_id):
     favorite = get_object_or_404(Favorite, pk=favorite_id)
     if request.user != favorite.user:
         return HttpResponseForbidden()
-    folder = get_object_or_404(Folder, pk=folder_id)
-    if request.user != folder.user:
+    if folder_id:
+        folder = get_object_or_404(Folder, pk=folder_id)
+        folder_pk = folder.pk
+    else:
+        folder = None
+        folder_pk = '' # special case for root folder
+    if folder is not None and request.user != folder.user:
         return HttpResponseForbidden()
 
-    form = FavoriteMoveHiddenForm(initial={'folder': folder.pk,
+    form = FavoriteMoveHiddenForm(initial={'folder': folder_pk,
                                            'object_id': favorite.pk})
     next = request.GET.get('next', None)
 
