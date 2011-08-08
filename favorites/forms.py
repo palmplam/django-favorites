@@ -9,18 +9,14 @@ class EmptyChoiceField(forms.ChoiceField):
     """
     def __init__(self, choices=(), empty_label="-----", required=True,
         widget=None, label=None, initial=None, help_text=None, *args, **kwargs):
-        
+
         # add an empty label if it exists (and field is not required!)
         if not required:
             choices = tuple([(u'', empty_label)] + list(choices))
-        
-        super(EmptyChoiceField, self).__init__(choices=choices, required=required, 
-                 widget=widget, label=label, initial=initial, help_text=help_text, 
+
+        super(EmptyChoiceField, self).__init__(choices=choices, required=required,
+                 widget=widget, label=label, initial=initial, help_text=help_text,
                                                                   *args, **kwargs)
-    def clean(self, value):
-        if int(value) == 0:
-            value = None
-        return value
 
 class ObjectIdForm(forms.Form):
     object_id = forms.IntegerField(widget=forms.HiddenInput())
@@ -48,7 +44,7 @@ class FolderForm(forms.Form):
 
 class CreateFavoriteForm(ObjectHiddenForm):
     """Form to confirm favorite creation"""
-    
+
     def __init__(self, choices, **kwargs):
         super(CreateFavoriteForm, self).__init__(**kwargs)
         self.fields['folder'] = EmptyChoiceField(
