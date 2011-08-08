@@ -6,23 +6,16 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
 from django.template import RequestContext
 from django.db.models import get_model
-from django.http import HttpResponse
-from django.http import HttpResponseNotFound
-from django.http import HttpResponseBadRequest
-from django.http import HttpResponseForbidden
+from django.http import (HttpResponse, HttpResponseNotFound, HttpResponseBadRequest,
+                         HttpResponseForbidden)
 from django.utils import simplejson
-
 from django.core.urlresolvers import reverse
 
-from favorites.models import Favorite
-from favorites.models import Folder
+from models import Favorite, Folder
+from favorites.forms import (ObjectIdForm, ObjectHiddenForm,  FolderForm,
+                             CreateFavoriteForm, UpdateFavoriteForm,
+                             FavoriteMoveHiddenForm, ValidationForm)
 
-from favorites.forms import ObjectIdForm, ObjectHiddenForm
-from favorites.forms import FolderForm
-from favorites.forms import CreateFavoriteForm
-from favorites.forms import UpdateFavoriteForm
-from favorites.forms import FavoriteMoveHiddenForm
-from favorites.forms import ValidationForm
 
 def _validate_next_parameter(request, next):
     parsed = urlparse.urlparse(next)

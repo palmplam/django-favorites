@@ -1,6 +1,5 @@
 from django.conf.urls.defaults import url
 from django.conf.urls.defaults import patterns
-
 from django.views.generic.list import ListView
 
 from favorites.models import Favorite
