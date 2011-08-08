@@ -27,17 +27,14 @@ urlpatterns = patterns("",
                        url(r'^favorite/move/(?P<object_id>\d+)$',
                            'favorites.views.favorite_move',
                            name='favorite_move'),
-
                        # move
                        url(r'^favorite/(?P<favorite_id>\d+)/move/(?P<folder_id>\d+)$',
                            'favorites.views.favorite_move_to_folder',
                            name='favorite_move_to_folder'),
-
                        # toggle share
                        url(r'^favorite/(?P<favorite_id>\d+)/toggle$',
                            'favorites.views.favorite_toggle_share',
                            name='favorite_toggle_share'),
-
                        # more listing
                        url(r'^favorite/(?P<app_label>\w+)/(?P<object_name>\w+)/$',
                            'favorites.views.favorite_content_type_and_folder_list',
@@ -45,7 +42,6 @@ urlpatterns = patterns("",
                        url(r'^favorite/(?P<app_label>\w+)/(?P<object_name>\w+)/folder/(?P<folder_id>\d+)$',
                            'favorites.views.favorite_content_type_and_folder_list',
                            name='favorite_content_type_and_folder_list'),
-
                        # folders urls
                        url('^folders/$',
                            'favorites.views.folder_list',
