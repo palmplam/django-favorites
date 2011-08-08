@@ -6,6 +6,7 @@ from django.views.generic.list import ListView
 from favorites.models import Favorite
 from favorites.models import Folder
 
+
 urlpatterns = patterns("",
                        # favorites urls
                        url(r'^favorites/$',
