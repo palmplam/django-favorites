@@ -55,11 +55,15 @@ class CreateFavoriteForm(ObjectHiddenForm):
                                 )
 
 class UpdateFavoriteForm(ObjectIdForm):
-    folder = forms.ChoiceField(required=True)
 
     def __init__(self, choices, **kwargs):
         super(UpdateFavoriteForm, self).__init__(**kwargs)
-        self.fields['folder'].choices = choices
+        self.fields['folder'] = EmptyChoiceField(
+                                    required=False,
+                                    label=_("Store in a folder?"),
+                                    empty_label=_("No folder"),
+                                    choices=choices,
+                                )
 
 
 class FavoriteMoveHiddenForm(ObjectIdForm):

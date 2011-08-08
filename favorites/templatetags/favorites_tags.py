@@ -141,15 +141,11 @@ def url_delete_from_favorites_confirmation(context, object):
 def favorite_move_widget(context, favorite):
     user = context['request'].user
     path = context['request'].path
-    choices = [(0, '')]
-    choices.extend(Folder.objects.filter(user=user).order_by('name').values_list('pk', 'name'))
+    choices = Folder.objects.filter(user=user).order_by('name').values_list('pk', 'name')
     folder_id = favorite.folder.pk if favorite.folder else 0
-    if len(choices) == 1:
-        form = ValidationForm()
-    else:
-        form = UpdateFavoriteForm(choices=choices,
-                                  initial={'folder': folder_id,
-                                           'object_id': favorite.pk})
+    form = UpdateFavoriteForm(choices=choices,
+                              initial={'folder': folder_id,
+                                       'object_id': favorite.pk})
     return {'form': form,
             'favorite': favorite,
             'next': path,
