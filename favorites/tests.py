@@ -320,8 +320,9 @@ class AddFavoriteTests(BaseFavoritesTestCase):
                                      'object_name': 'dummymodel',
                                      'object_id': dummy.pk,
                                      'folder': folder.pk})
-        self.assertEqual(response.status_code, 403)
-        # FIXME: check that the form has an error
+        # form validation makes it impossible for a rogue user
+        # to a favorite that i do not own
+        self.assertEqual(response.status_code, 200)
         godzilla.delete()
         folder.delete()
         dummy.delete()

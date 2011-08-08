@@ -143,11 +143,8 @@ def create_favorite(request, app_label, object_name, object_id):
             object_name = form.cleaned_data['object_name']
             object_id = form.cleaned_data['object_id']
             folder_id = form.cleaned_data['folder']
-
             if folder_id:
                 folder = get_object_or_404(Folder, pk=folder_id)
-                if request.user != folder.user:
-                    return HttpResponseForbidden()
             else:
                 folder = None
 
