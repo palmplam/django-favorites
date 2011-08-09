@@ -117,14 +117,30 @@ def favorite_list(request):
 
 
 @login_required
-def favorite_add(request, app_label, object_name, object_id):
+def favorite_add(request, app_label, object_name, object_id):  #FIXME factor
     """Renders a formular to get confirmation to favorite the
     object represented by `app_label`, `object_name` and `object_id`
     creation. It raise a 404 exception if there is not such object.
     If it's a POST creates the favorite object if there isn't
-    any such favorite already. If validation fails the it returns the
-    with an insightful error. If the validation succeed the favorite is
-    added to user profile and a redirection is returned"""
+    any such favorite already. If validation fails the it renders an
+    insightful error message. If the validation succeed the favorite is
+    added to user profile and a redirection is returned. If the object
+    is already a favorite renders a message."""
+    model = get_model(app_label, object_name)
+    try:
+        content_type = ContentType.objects.get_for_model(model)
+    except AttributeError: # there no such model
+        return HttpResponseBadRequest()
+    obj = content_type.get_object_for_this_type(pk=object_id)
+    query = Favorite.objects.filter(content_type=content_type,
+                                   object_id=object_id,
+                                   user=request.user)
+    count = query.count()
+    if count != 0:
+        favorite = query[0]
+        ctx = {'object': obj, 'next': _get_next(request), 'favorite': favorite}
+        return render(request, 'favorites/favorite_already_favorite.html', ctx)
+
     query = Folder.objects.filter(user=request.user)
     choices = query.order_by('name').values_list('pk', 'name')
 
@@ -157,10 +173,6 @@ def favorite_add(request, app_label, object_name, object_id):
                                                  request.user,
                                                  folder)
                 return redirect(_get_next(request))
-            else:
-                favorite = query[0]
-                ctx = {'object': obj, 'next': _get_next(request), 'favorite': favorite}
-                return render(request, 'favorites/favorite_already_favorite.html', ctx)
     else:
         initial = {'app_label': app_label,
                    'object_name': object_name,
