@@ -585,21 +585,21 @@ class FavoriteContentTypeList(BaseFavoritesTestCase):
             dummy.save()
             favorite = Favorite.objects.create_favorite(dummy, user, folder)
             return dummy, favorite
-        godzilla_objects =  []
+        godzilla_instances =  []
         godzilla_favorite_pks = []
         for i in range(5):
-            object, favorite = create_object_n_favorite(godzilla)
-            godzilla_objects.append((object, favorite))
+            instance, favorite = create_object_n_favorite(godzilla)
+            godzilla_instances.append((instance, favorite))
             godzilla_favorite_pks.append(favorite.pk)
         japan = Folder(name='japan', user=godzilla)
         japan.save()
         for i in range(5):
-            object, favorite = create_object_n_favorite(godzilla, japan)
-            godzilla_objects.append((object, favorite))
+            instance, favorite = create_object_n_favorite(godzilla, japan)
+            godzilla_instances.append((instance, favorite))
             godzilla_favorite_pks.append(favorite.pk)
-        leviathan_objects = []
+        leviathan_instances = []
         for i in range(5):
-            leviathan_objects.append(create_object_n_favorite(leviathan))
+            leviathan_instances.append(create_object_n_favorite(leviathan))
 
         # tests
         target_url = reverse('favorite_content_type_list',
@@ -610,13 +610,13 @@ class FavoriteContentTypeList(BaseFavoritesTestCase):
         response = self.client.get(target_url)
         self.assertEquals(response.status_code, 200)
         self.assertIsNotNone(response.context['favorites'])
-        for object in response.context['favorites']:
-            self.assertIn(object.pk, godzilla_favorite_pks)
+        for instance in response.context['favorites']:
+            self.assertIn(instance.pk, godzilla_favorite_pks)
 
         # teardown
-        for objects in (leviathan_objects, godzilla_objects):
-            for object, favorite in objects:
-                object.delete()
+        for instances in (leviathan_instances, godzilla_instances):
+            for instance, favorite in instances:
+                instance.delete()
                 favorite.delete()
         godzilla.delete()
         leviathan.delete()
@@ -632,16 +632,16 @@ class FavoriteContentTypeList(BaseFavoritesTestCase):
             dummy.save()
             favorite = Favorite.objects.create_favorite(dummy, user)
             return dummy, favorite
-        godzilla_objects =  []
+        godzilla_instances =  []
         godzilla_dummymodel_favorite_pks = []
         for i in range(5):
-            object, favorite = create_object_n_favorite(DummyModel, godzilla)
+            instance, favorite = create_object_n_favorite(DummyModel, godzilla)
             godzilla_dummymodel_favorite_pks.append(favorite.pk)
-            godzilla_objects.append((object, favorite))
+            godzilla_instances.append((instance, favorite))
 
         for i in range(5):
-            object, favorite = create_object_n_favorite(BarModel, godzilla)
-            godzilla_objects.append((object, favorite))
+            instance, favorite = create_object_n_favorite(BarModel, godzilla)
+            godzilla_instances.append((instance, favorite))
 
         # tests
         target_url = reverse('favorite_content_type_list',
@@ -652,12 +652,12 @@ class FavoriteContentTypeList(BaseFavoritesTestCase):
         response = self.client.get(target_url)
         self.assertEquals(response.status_code, 200)
         self.assertIsNotNone(response.context['favorites'])
-        for object in response.context['favorites']:
-            self.assertIn(object.pk, godzilla_dummymodel_favorite_pks)
+        for instance in response.context['favorites']:
+            self.assertIn(instance.pk, godzilla_dummymodel_favorite_pks)
 
         # teardown
-        for object, favorite in godzilla_objects:
-            object.delete()
+        for instance, favorite in godzilla_instances:
+            instance.delete()
             favorite.delete()
         godzilla.delete()
 
@@ -721,8 +721,8 @@ class MoveFavoriteTests(BaseFavoritesTestCase):
         response = self.client.get(target_url)
         self.assertEquals(response.status_code, 200)
 
-        object = response.context['favorite']
-        self.assertEquals(object.pk, favorite.pk)
+        instance = response.context['favorite']
+        self.assertEquals(instance.pk, favorite.pk)
         favorite.delete()
         godzilla.delete()
         for folder in folders:
@@ -776,8 +776,8 @@ class MoveFavoriteTests(BaseFavoritesTestCase):
         post_values = {'object_id': favorite.pk, 'folder': folder.pk}
         response = self.client.post(target_url, post_values)
         self.assertEquals(response.status_code, 302)
-        object = Favorite.objects.get(pk=favorite.pk)
-        self.assertEqual(folder.pk, object.folder.pk)
+        instance = Favorite.objects.get(pk=favorite.pk)
+        self.assertEqual(folder.pk, instance.folder.pk)
         folder.delete()
         favorite.delete()
         godzilla.delete()
@@ -839,8 +839,8 @@ class MoveFavoriteTests(BaseFavoritesTestCase):
         post_values = {'object_id': favorite.pk, 'folder': ''}
         response = self.client.post(target_url, post_values)
         self.assertEquals(response.status_code, 302)
-        object = Favorite.objects.get(pk=favorite.pk)
-        self.assertIsNone(object.folder)
+        instance = Favorite.objects.get(pk=favorite.pk)
+        self.assertIsNone(instance.folder)
         favorite.delete()
         godzilla.delete()
         dummy.delete()
@@ -922,23 +922,23 @@ class ContentTypeByFolderListTests(BaseFavoritesTestCase):
             return m, favorite
 
         japan_folder_pks = []
-        objects = []
+        instances = []
         for _ in range(5):
-            object, favorite = create_favorites(DummyModel, japan)
+            instance, favorite = create_favorites(DummyModel, japan)
             japan_folder_pks.append(favorite.pk)
-            objects.append((object, favorite))
+            instances.append((instance, favorite))
 
         for _ in range(5):
-            object, favorite = create_favorites(DummyModel, china)
-            objects.append((object, favorite))
+            instance, favorite = create_favorites(DummyModel, china)
+            instances.append((instance, favorite))
 
         for _ in range(5):
-            object, favorite = create_favorites(BarModel, japan)
-            objects.append((object, favorite))
+            instance, favorite = create_favorites(BarModel, japan)
+            instances.append((instance, favorite))
 
         for _ in range(5):
-            object, favorite = create_favorites(BarModel, china)
-            objects.append((object, favorite))
+            instance, favorite = create_favorites(BarModel, china)
+            instances.append((instance, favorite))
 
         self.client.login(username='godzilla', password='godzilla')
         target_url = reverse('favorite_content_type_and_folder_list',
@@ -950,13 +950,13 @@ class ContentTypeByFolderListTests(BaseFavoritesTestCase):
         response = self.client.get(target_url)
         self.assertEquals(response.status_code, 200)
         self.assertIsNotNone(response.context['favorites'])
-        for object in response.context['favorites']:
-            self.assertIn(object.pk, japan_folder_pks)
+        for instance in response.context['favorites']:
+            self.assertIn(instance.pk, japan_folder_pks)
 
         godzilla.delete()
-        for object in objects:
-            object[0].delete()
-            object[1].delete()
+        for instance in instances:
+            instance[0].delete()
+            instance[1].delete()
         japan.delete()
         china.delete()
 
