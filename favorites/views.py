@@ -17,8 +17,8 @@ from favorites.forms import (ObjectIdForm, ObjectHiddenForm,  FolderForm,
                              FavoriteMoveHiddenForm, ValidationForm)
 
 
-def _validate_next_parameter(request, next):
-    parsed = urlparse.urlparse(next)
+def _validate_next_parameter(request, next_url):
+    parsed = urlparse.urlparse(next_url)
     if parsed and parsed.path:
         return parsed.path
     return None
@@ -38,12 +38,12 @@ def _get_next(request):
     3. If Django can determine the previous page from the HTTP headers, the view will
     redirect to that previous page.
     """
-    next = request.POST.get('next', request.GET.get('next', request.META.get('HTTP_REFERER', None)))
-    if next:
-        next = _validate_next_parameter(request, next)
-    if not next:
-        next = request.path
-    return next
+    next_url = request.POST.get('next', request.GET.get('next', request.META.get('HTTP_REFERER', None)))
+    if next_url:
+        next_url = _validate_next_parameter(request, next_url)
+    if not next_url:
+        next_url = request.path
+    return next_url
 
 
 ### FOLDER VIEWS ###########################################################
@@ -64,10 +64,10 @@ def folder_add(request):
             Folder(name=name, user=request.user).save()
             return redirect(_get_next(request))
     form = FolderForm()
-    next = request.GET.get('next', None)
+    next_url = _get_next(request)
     return render_to_response('favorites/folder_add.html',
                               RequestContext(request, {'form': form,
-                                                       'next': next}))
+                                                       'next': next_url}))
 
 
 @login_required
@@ -84,10 +84,10 @@ def folder_update(request, object_id):
             folder.save()
             return redirect(_get_next(request))
     form = FolderForm(initial={'name': folder.name})
-    next = request.GET.get('next', None)
+    next_url = _get_next(request)
     return render_to_response('favorites/folder_update.html',
                                RequestContext(request, {'form': form,
-                                                        'next': next,
+                                                        'next': next_url,
                                                         'folder': folder}))
 
 
@@ -100,10 +100,10 @@ def folder_delete(request, object_id):
         folder.delete()
         return redirect(_get_next(request))
     folder = get_object_or_404(Folder, pk=object_id)
-    next = request.GET.get('next', None)
+    next_url = _get_next(request)
     return render_to_response('favorites/folder_delete.html',
                               RequestContext(request, {'folder': folder,
-                                                       'next': next}))
+                                                       'next': next_url}))
 
 ### FAVORITE VIEWS #########################################################
 
@@ -285,7 +285,7 @@ def favorite_move_to_folder(request, favorite_id, folder_id):
 
     form = FavoriteMoveHiddenForm(initial={'folder': folder_pk,
                                            'object_id': favorite.pk})
-    next = request.GET.get('next', None)
+    next_url = request.GET.get('next', None)
 
     ctx = {'form': form,
            'favorite': favorite,
