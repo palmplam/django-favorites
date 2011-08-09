@@ -716,7 +716,7 @@ class MoveFavoriteTests(BaseFavoritesTestCase):
         dummy.save()
         favorite = Favorite.objects.create_favorite(dummy, godzilla)
         response = self.client.post('/favorite/move/%s' % favorite.pk,
-                                    {'object_id': favorite.pk, 'folder': 0})  #FIXME specification changed
+                                    {'object_id': favorite.pk, 'folder': ''})  #FIXME specification changed
         self.assertEquals(response.status_code, 302)
         object = Favorite.objects.get(pk=favorite.pk)
         self.assertIsNone(object.folder)
