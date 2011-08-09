@@ -131,7 +131,10 @@ def favorite_add(request, app_label, object_name, object_id):  #FIXME factor
         content_type = ContentType.objects.get_for_model(model)
     except AttributeError: # there no such model
         return HttpResponseBadRequest()
-    obj = content_type.get_object_for_this_type(pk=object_id)
+    try:
+        obj = content_type.get_object_for_this_type(pk=object_id)
+    except model.DoesNotExist:
+        return HttpResponseBadRequest()
     query = Favorite.objects.filter(content_type=content_type,
                                    object_id=object_id,
                                    user=request.user)
