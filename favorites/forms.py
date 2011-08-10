@@ -25,12 +25,15 @@ class FolderForm(forms.Form):
 
 class UserFolderChoicesForm(forms.Form):
     """Form to confirm favorite creation"""
-    folder_id = EmptyChoiceField(required=False,
-                              label=_("Store in a folder?"),
-                              empty_label=_("No folder"))
+
     def __init__(self, choices, **kwargs):
         super(UserFolderChoicesForm, self).__init__(**kwargs)
-        self.fields['folder_id'].choices = choices
+        self.fields['folder_id'] = EmptyChoiceField(required=False,
+                                                    label=_("Store in a folder?"),
+                                                    empty_label=_("No folder"),
+                                                    choices=choices,
+                                                    initial=kwargs.get('folder_id', None))
+
 
 
 class ValidationForm(forms.Form):
