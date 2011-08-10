@@ -253,29 +253,31 @@ def favorite_move(request, object_id):
 
 @login_required
 def favorite_move_to_folder(request, favorite_id, folder_id):
-    """moves a favorite to a folder provided a get parameter with confirmation"""
+    """moves a favorite to a folder provided as a get parameter with confirmation"""
     favorite = get_object_or_404(Favorite, pk=favorite_id)
+    # check credentials on favorite
     if request.user != favorite.user:
         return HttpResponseForbidden()
+    # fetch folder
     if folder_id:
         folder = get_object_or_404(Folder, pk=folder_id)
-        folder_pk = folder.pk
-    else:
-        folder = None
-        folder_pk = '' # special case for root folder
-    if folder is not None and request.user != folder.user:
-        return HttpResponseForbidden()
+        # check credentials
+        if request.user != folder.user:
+            folder_pk = folder.pk
+            return HttpResponseForbidden()
 
-    form = FavoriteMoveHiddenForm(initial={'folder': folder_pk,
-                                           'object_id': favorite.pk})
-    next_url = request.GET.get('next', None)
+    folder = None
+    folder_pk = '' # special case for root folder
 
-    ctx = {'form': form,
-           'favorite': favorite,
-           'folder': folder,
-           'next': next}
-    ctx = RequestContext(request, ctx)
-    return render_to_response('favorites/favorite_move_to_folder.html', ctx)
+    form = ValidationForm()
+    next_url = _get_next(request)
+    ctx = {
+    'form': form,
+    'favorite': favorite,
+    'folder': folder,
+    'next': next
+}
+    return render(request, 'favorites/favorite_move_to_folder.html', ctx)
 
 
 @login_required
