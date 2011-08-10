@@ -470,7 +470,7 @@ class DeleteFavoriteForObjectTests(BaseFavoritesTestCase):
         godzilla.delete()
 
     def test_unknown_object(self):
-        """User try to delete an unknown object. Returns a 404."""
+        """User try to delete an unknown object. Returns a 400."""
         godzilla = self.user('godzilla')
         self.client.login(username='godzilla', password='godzilla')
         target_url = reverse('favorite_delete_for_object',
@@ -480,7 +480,7 @@ class DeleteFavoriteForObjectTests(BaseFavoritesTestCase):
     'object_id': 0
 })
         response = self.client.get(target_url)
-        self.assertEquals(response.status_code, 404)
+        self.assertEquals(response.status_code, 400)
         godzilla.delete()
 
     def test_unknown_favorite(self):
@@ -513,12 +513,8 @@ class DeleteFavoriteForObjectTests(BaseFavoritesTestCase):
     'object_id': dummy.pk
 })
         response = self.client.get(target_url)
-        self.assertEquals(response.status_code, 200)
-        self.assertIsNotNone(response.context.get('form', None))
-        self.assertIsNotNone(response.context['form'].fields.get('object_id', None))
-        # FIXME: check that the initial value is folder.pk
-        self.assertIsNotNone(response.context.get('object', None))
-        self.assertIsNotNone(response.context['object'].pk, favorite.pk)
+        redirect_url = reverse('favorite_delete', kwargs={'object_id': favorite.pk})
+        self.assertRedirects(response, redirect_url)
         godzilla.delete()
         dummy.delete()
         favorite.delete()
@@ -554,8 +550,9 @@ class DeleteFavoriteTests(BaseFavoritesTestCase):  # FIXME: remove because doubl
         response = self.client.get(target_url)
         self.assertEquals(response.status_code, 200)
         self.assertIsNotNone(response.context.get('form', None))
-        self.assertIsNotNone(response.context.get('object', None))
-        self.assertEquals(response.context['object'].pk, dummy.pk)
+        self.assertIsNotNone(response.context.get('favorite', None))
+        self.assertEquals(response.context['favorite'].pk, favorite.pk)
+        self.assertEquals(response.context['favorite'].content_object.pk, dummy.pk)
         godzilla.delete()
         dummy.delete()
         favorite.delete()

@@ -1,5 +1,4 @@
-<h1>Delete favorite for {{object}}</h1>
-<form method="POST" action="{% if next %}?next={{next}}{% endif %}">{% csrf_token %}
-{{ form }}
+<h1>Delete favorite for {{favorite.content_object}}</h1>
+<form method="POST" action="{% if next %}?next={{next}}{% endif %}">{% csrf_token %}{{ form }}
 <input type=submit />
 </form>

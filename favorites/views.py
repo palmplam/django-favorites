@@ -108,6 +108,7 @@ def folder_delete(request, object_id):
 
 ### FAVORITE VIEWS #########################################################
 
+### LIST
 
 @login_required
 def favorite_list(request):
@@ -115,6 +116,8 @@ def favorite_list(request):
     ctx = {'favorites': object_list}
     return render(request, 'favorites/favorite_list.html', ctx)
 
+
+### ADD
 
 @login_required
 def favorite_add(request, app_label, object_name, object_id):  #FIXME factor
@@ -163,52 +166,54 @@ def favorite_add(request, app_label, object_name, object_id):  #FIXME factor
             ctx = {'form': form, 'object': instance, 'next':_get_next(request)}
             return render(request, 'favorites/favorite_add.html', ctx)
 
+### DELETE
 
 @login_required
 def favorite_delete_for_object(request,
                                app_label,
                                object_name,
                                object_id):
-    """Renders a formular to get confirmation to unfavorite the
-    object represented by `app_label`, `object_name` and `object_id`.
-    It raise a 404 exception if there is not such object."""
-    model = get_model(app_label, object_name)
-    if model is None:
-        return HttpResponseBadRequest()
-    obj = get_object_or_404(model, pk=object_id)
+    """Renders a formular to get confirmation to unfavorite the object
+    represented by `app_label`, `object_name` and `object_id`. It raise a 404
+    exception if there is not such object. Redirects to ``favorite_delete``."""
+    # Is it a valid object ?
+    instance_or_response = get_object_or_400_response(app_label, object_name, object_id)
+    if isinstance(instance_or_response, HttpResponse):
+        # the object is not found can be unknown model or unknown object
+        return instance_or_response
+    else:
+        instance = instance_or_response
+        favorites = Favorite.objects.favorites_for_object(instance, request.user)
+        if not favorites:
+            # user has no favorite for this object
+            return HttpResponseNotFound()
+        else:
+            favorite = favorites[0]
+            return redirect(reverse('favorite_delete', kwargs={'object_id': favorite.pk}))
 
-    query = Favorite.objects.favorites_for_object(obj, request.user)
-
-    try:
-        favorite = query[0]
-    except:
-        return HttpResponseNotFound()
-
-    form = ObjectIdForm(initial={'object_id': favorite.pk})
-
-    ctx = {'form': form, 'object': obj, 'next': _get_next(request)}
-    return render(request, 'favorites/favorite_delete.html', ctx)
 
 @login_required
 def favorite_delete(request, object_id):
     """Renders a formular to get confirmation to unfavorite the object
     the favorite that has ``object_id`` as id. It raise a 404 if there
-    is not such a object, a HttpResponseForbidden if the favorite is not
+    is not such a favorite, a HttpResponseForbidden if the favorite is not
     owned by current user"""
     favorite = get_object_or_404(Favorite, pk=object_id)
-    if request.method == 'POST':
-        form = ValidationForm(request.POST)
-        if form.is_valid():
-            if request.user == favorite.user:
+    # check credentials
+    if not request.user == favorite.user:
+        return HttpResponseForbidden()
+    else:
+        if request.method == 'POST':
+            form = ValidationForm(request.POST)
+            if form.is_valid():
                 favorite.delete()
                 return redirect(_get_next(request))
-            else:
-                return HttpResponseForbidden()
-    instance = favorite.content_object
-    form = ValidationForm()
-    ctx = {'form': form, 'object': instance, 'next': _get_next(request)}
-    ctx = RequestContext(request, ctx)
-    return render_to_response('favorites/favorite_delete.html', ctx)
+        else:
+            form = ValidationForm()
+        # if form is not valid or if it's a GET request
+        ctx = {'form': form, 'favorite': favorite, 'next': _get_next(request)}
+        return render(request, 'favorites/favorite_delete.html', ctx)
+
 
 @login_required
 def favorite_move(request, object_id):
