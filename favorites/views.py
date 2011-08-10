@@ -51,8 +51,8 @@ def _get_next(request):
 @login_required
 def folder_list(request):
     object_list = Folder.objects.filter(user=request.user)
-    ctx = RequestContext(request, {'object_list': object_list})
-    return render_to_response('favorites/folder_list.html', ctx)
+    ctx = {'object_list': object_list}
+    return render(request, 'favorites/folder_list.html', ctx)
 
 
 @login_required
@@ -63,17 +63,17 @@ def folder_add(request):
             name = form.cleaned_data['name']
             Folder(name=name, user=request.user).save()
             return redirect(_get_next(request))
-    form = FolderForm()
-    next_url = _get_next(request)
-    return render_to_response('favorites/folder_add.html',
-                              RequestContext(request, {'form': form,
-                                                       'next': next_url}))
+    else:
+        form = FolderForm()
+        next_url = _get_next(request)
+        ctx = {'form': form, 'next': next_url}
+        return render(request, 'favorites/folder_add.html', ctx)
 
 
 @login_required
 def folder_update(request, object_id):
     folder = get_object_or_404(Folder, pk=object_id)
-
+    # check credentials
     if folder.user != request.user:
         return HttpResponseForbidden()
 
@@ -83,27 +83,27 @@ def folder_update(request, object_id):
             folder.name = form.cleaned_data['name']
             folder.save()
             return redirect(_get_next(request))
-    form = FolderForm(initial={'name': folder.name})
-    next_url = _get_next(request)
-    return render_to_response('favorites/folder_update.html',
-                               RequestContext(request, {'form': form,
-                                                        'next': next_url,
-                                                        'folder': folder}))
+    else:
+        form = FolderForm(initial={'name': folder.name})
+        next_url = _get_next(request)
+        ctx = {'form': form, 'next': next_url, 'folder': folder}
+        return render(request, 'favorites/folder_update.html', ctx)
 
 
 @login_required
 def folder_delete(request, object_id):
     folder = get_object_or_404(Folder, pk=object_id)
+    # check credentials
     if request.user != folder.user:
         return HttpResponseForbidden()
+
     if request.method == 'POST':
         folder.delete()
         return redirect(_get_next(request))
-    folder = get_object_or_404(Folder, pk=object_id)
-    next_url = _get_next(request)
-    return render_to_response('favorites/folder_delete.html',
-                              RequestContext(request, {'folder': folder,
-                                                       'next': next_url}))
+    else:
+        next_url = _get_next(request)
+        ctx = {'folder': folder, 'next': next_url}
+        return render(request, 'favorites/folder_delete.html', ctx)
 
 ### FAVORITE VIEWS #########################################################
 
