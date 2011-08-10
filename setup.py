@@ -10,7 +10,7 @@ modules = [
 
 setup(
     name = 'favorites',
-    version = '0.2',
+    version = '0.3.1',
     description = 'Generic favorites application for Django',
     author = 'Djaz Team',
     author_email = 'devweb@liberation.fr',
