@@ -284,19 +284,21 @@ def favorite_move_to_folder(request, favorite_id, folder_id):
 def favorite_toggle_share(request, favorite_id):
     """Confirm before submiting the toggle share action"""
     favorite = get_object_or_404(Favorite, pk=favorite_id)
+    # check crendentials
     if request.user != favorite.user:
         return HttpResponseForbidden()
-    if request.method == 'POST':
-        form = ValidationForm(data=request.POST)
-        if form.is_valid():
-            favorite.shared = False if favorite.shared else True  # toggle
-            favorite.save()
-            return redirect(_get_next(request))
     else:
-        form = ValidationForm()
-    ctx = {'favorite': favorite}
-    ctx = RequestContext(request, ctx)
-    return render_to_response('favorites/favorite_toggle_share.html', ctx)
+        if request.method == 'POST':
+            form = ValidationForm(data=request.POST)
+            if form.is_valid():
+                favorite.shared = False if favorite.shared else True  # toggle
+                favorite.save()
+                return redirect(_get_next(request))
+        else:
+            form = ValidationForm()
+        # form is not valid or it's a GET request
+        ctx = {'favorite': favorite}
+        return render(request, 'favorites/favorite_toggle_share.html', ctx)
 
 
 @login_required
