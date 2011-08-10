@@ -338,10 +338,7 @@ class AddFavoriteTests(BaseFavoritesTestCase):
     'object_id': dummy.pk
 })
         response = self.client.post(target_url,
-                                    {'app_label': 'favorites',
-                                     'object_name': 'dummymodel',
-                                     'object_id': dummy.pk,
-                                     'folder': folder.pk})
+                                    {'folder_id': folder.pk})
         self.assertEquals(response.status_code, 302)
         godzilla.delete()
         folder.delete()
@@ -362,10 +359,7 @@ class AddFavoriteTests(BaseFavoritesTestCase):
     'object_id': dummy.pk
 })
         response = self.client.post(target_url,
-                                    {'app_label': 'favorites',
-                                     'object_name': 'dummymodel',
-                                     'object_id': dummy.pk,
-                                     'folder': folder.pk})
+                                    {'folder_id': folder.pk})
         # form validation makes it impossible for a rogue user
         # to a favorite that i do not own
         self.assertEqual(response.status_code, 200)
@@ -470,7 +464,7 @@ class DeleteFavoriteForObjectTests(BaseFavoritesTestCase):
         godzilla.delete()
 
     def test_unknown_object(self):
-        """User try to delete an unknown object. Returns a 404."""
+        """User try to delete an unknown object. Returns a 400."""
         godzilla = self.user('godzilla')
         self.client.login(username='godzilla', password='godzilla')
         target_url = reverse('favorite_delete_for_object',
@@ -480,7 +474,7 @@ class DeleteFavoriteForObjectTests(BaseFavoritesTestCase):
     'object_id': 0
 })
         response = self.client.get(target_url)
-        self.assertEquals(response.status_code, 404)
+        self.assertEquals(response.status_code, 400)
         godzilla.delete()
 
     def test_unknown_favorite(self):
@@ -513,12 +507,8 @@ class DeleteFavoriteForObjectTests(BaseFavoritesTestCase):
     'object_id': dummy.pk
 })
         response = self.client.get(target_url)
-        self.assertEquals(response.status_code, 200)
-        self.assertIsNotNone(response.context.get('form', None))
-        self.assertIsNotNone(response.context['form'].fields.get('object_id', None))
-        # FIXME: check that the initial value is folder.pk
-        self.assertIsNotNone(response.context.get('object', None))
-        self.assertIsNotNone(response.context['object'].pk, favorite.pk)
+        redirect_url = reverse('favorite_delete', kwargs={'object_id': favorite.pk})
+        self.assertRedirects(response, redirect_url)
         godzilla.delete()
         dummy.delete()
         favorite.delete()
@@ -554,8 +544,9 @@ class DeleteFavoriteTests(BaseFavoritesTestCase):  # FIXME: remove because doubl
         response = self.client.get(target_url)
         self.assertEquals(response.status_code, 200)
         self.assertIsNotNone(response.context.get('form', None))
-        self.assertIsNotNone(response.context.get('object', None))
-        self.assertEquals(response.context['object'].pk, dummy.pk)
+        self.assertIsNotNone(response.context.get('favorite', None))
+        self.assertEquals(response.context['favorite'].pk, favorite.pk)
+        self.assertEquals(response.context['favorite'].content_object.pk, dummy.pk)
         godzilla.delete()
         dummy.delete()
         favorite.delete()
@@ -773,7 +764,7 @@ class MoveFavoriteTests(BaseFavoritesTestCase):
                              kwargs = {
     'object_id': favorite.pk,
 })
-        post_values = {'object_id': favorite.pk, 'folder': folder.pk}
+        post_values = {'object_id': favorite.pk, 'folder_id': folder.pk}
         response = self.client.post(target_url, post_values)
         self.assertEquals(response.status_code, 302)
         instance = Favorite.objects.get(pk=favorite.pk)
@@ -797,7 +788,7 @@ class MoveFavoriteTests(BaseFavoritesTestCase):
                              kwargs = {
     'object_id': favorite.pk,
 })
-        post_values = {'object_id': favorite.pk, 'folder': folder.pk}
+        post_values = {'object_id': favorite.pk, 'folder_id': folder.pk}
         response = self.client.post(target_url, post_values)
         self.assertEquals(response.status_code, 200)
         folder.delete()
@@ -817,7 +808,7 @@ class MoveFavoriteTests(BaseFavoritesTestCase):
                              kwargs = {
     'object_id': favorite.pk,
 })
-        post_values = {'object_id': favorite.pk, 'folder': 1}
+        post_values = {'object_id': favorite.pk, 'folder_id': 1}
         response = self.client.post(target_url, post_values)
         self.assertEquals(response.status_code, 200)
         favorite.delete()
@@ -836,7 +827,7 @@ class MoveFavoriteTests(BaseFavoritesTestCase):
                              kwargs = {
     'object_id': favorite.pk,
 })
-        post_values = {'object_id': favorite.pk, 'folder': ''}
+        post_values = {'object_id': favorite.pk, 'folder_id': ''}
         response = self.client.post(target_url, post_values)
         self.assertEquals(response.status_code, 302)
         instance = Favorite.objects.get(pk=favorite.pk)

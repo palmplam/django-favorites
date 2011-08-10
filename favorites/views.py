@@ -11,10 +11,9 @@ from django.http import (HttpResponse, HttpResponseNotFound, HttpResponseBadRequ
 from django.utils import simplejson
 from django.core.urlresolvers import reverse
 
+from utils import get_object_or_400_response
 from models import Favorite, Folder
-from favorites.forms import (ObjectIdForm, ObjectHiddenForm,  FolderForm,
-                             CreateFavoriteForm, UpdateFavoriteForm,
-                             FavoriteMoveHiddenForm, ValidationForm)
+from favorites.forms import FolderForm, UserFolderChoicesForm, ValidationForm
 
 
 def _validate_next_parameter(request, next_url):
@@ -51,8 +50,8 @@ def _get_next(request):
 @login_required
 def folder_list(request):
     object_list = Folder.objects.filter(user=request.user)
-    ctx = RequestContext(request, {'object_list': object_list})
-    return render_to_response('favorites/folder_list.html', ctx)
+    ctx = {'object_list': object_list}
+    return render(request, 'favorites/folder_list.html', ctx)
 
 
 @login_required
@@ -63,17 +62,17 @@ def folder_add(request):
             name = form.cleaned_data['name']
             Folder(name=name, user=request.user).save()
             return redirect(_get_next(request))
-    form = FolderForm()
-    next_url = _get_next(request)
-    return render_to_response('favorites/folder_add.html',
-                              RequestContext(request, {'form': form,
-                                                       'next': next_url}))
+    else:
+        form = FolderForm()
+        next_url = _get_next(request)
+        ctx = {'form': form, 'next': next_url}
+        return render(request, 'favorites/folder_add.html', ctx)
 
 
 @login_required
 def folder_update(request, object_id):
     folder = get_object_or_404(Folder, pk=object_id)
-
+    # check credentials
     if folder.user != request.user:
         return HttpResponseForbidden()
 
@@ -83,235 +82,221 @@ def folder_update(request, object_id):
             folder.name = form.cleaned_data['name']
             folder.save()
             return redirect(_get_next(request))
-    form = FolderForm(initial={'name': folder.name})
-    next_url = _get_next(request)
-    return render_to_response('favorites/folder_update.html',
-                               RequestContext(request, {'form': form,
-                                                        'next': next_url,
-                                                        'folder': folder}))
+    else:
+        form = FolderForm(initial={'name': folder.name})
+        next_url = _get_next(request)
+        ctx = {'form': form, 'next': next_url, 'folder': folder}
+        return render(request, 'favorites/folder_update.html', ctx)
 
 
 @login_required
 def folder_delete(request, object_id):
     folder = get_object_or_404(Folder, pk=object_id)
+    # check credentials
     if request.user != folder.user:
         return HttpResponseForbidden()
+
     if request.method == 'POST':
         folder.delete()
         return redirect(_get_next(request))
-    folder = get_object_or_404(Folder, pk=object_id)
-    next_url = _get_next(request)
-    return render_to_response('favorites/folder_delete.html',
-                              RequestContext(request, {'folder': folder,
-                                                       'next': next_url}))
+    else:
+        next_url = _get_next(request)
+        ctx = {'folder': folder, 'next': next_url}
+        return render(request, 'favorites/folder_delete.html', ctx)
 
 ### FAVORITE VIEWS #########################################################
+
+### LIST
 
 
 @login_required
 def favorite_list(request):
     object_list = Favorite.objects.favorites_for_user(request.user)
     ctx = {'favorites': object_list}
-    ctx = RequestContext(request, ctx)
-    return render_to_response('favorites/favorite_list.html', ctx)
+    return render(request, 'favorites/favorite_list.html', ctx)
+
+
+### ADD
 
 
 @login_required
 def favorite_add(request, app_label, object_name, object_id):  #FIXME factor
     """Renders a formular to get confirmation to favorite the
     object represented by `app_label`, `object_name` and `object_id`
-    creation. It raise a 404 exception if there is not such object.
-    If it's a POST creates the favorite object if there isn't
-    any such favorite already. If validation fails the it renders an
+    creation. It raise a 400 exception if there is not such object.
+    If it's a `POST` creates the favorite object if there isn't
+    a favorite already. If validation fails the it renders an
     insightful error message. If the validation succeed the favorite is
     added to user profile and a redirection is returned. If the object
     is already a favorite renders a message."""
-    model = get_model(app_label, object_name)
-    try:
-        content_type = ContentType.objects.get_for_model(model)
-    except AttributeError: # there no such model
-        return HttpResponseBadRequest()
-    try:
-        obj = content_type.get_object_for_this_type(pk=object_id)
-    except model.DoesNotExist:
-        return HttpResponseBadRequest()
-    query = Favorite.objects.filter(content_type=content_type,
-                                   object_id=object_id,
-                                   user=request.user)
-    count = query.count()
-    if count != 0:
-        favorite = query[0]
-        ctx = {'object': obj, 'next': _get_next(request), 'favorite': favorite}
-        return render(request, 'favorites/favorite_already_favorite.html', ctx)
 
-    query = Folder.objects.filter(user=request.user)
-    choices = query.order_by('name').values_list('pk', 'name')
-
-    if request.method == 'POST':
-        form = CreateFavoriteForm(choices=choices, data=request.POST)
-
-        if form.is_valid():
-            app_label = form.cleaned_data['app_label']
-            object_name = form.cleaned_data['object_name']
-            object_id = form.cleaned_data['object_id']
-            folder_id = form.cleaned_data['folder']
-            if folder_id:
-                folder = get_object_or_404(Folder, pk=folder_id)
-            else:
-                folder = None
-
-            model = get_model(app_label, object_name)
-            try:
-                content_type = ContentType.objects.get_for_model(model)
-            except AttributeError: # there no such model
-                return HttpResponseBadRequest()
-            obj = content_type.get_object_for_this_type(pk=object_id)
-
-            query = Favorite.objects.filter(content_type=content_type,
-                                           object_id=object_id,
-                                           user=request.user)
-            count = query.count()
-            if count == 0:
-                Favorite.objects.create_favorite(obj,
-                                                 request.user,
-                                                 folder)
-                return redirect(_get_next(request))
+    # Is it a valid object ?
+    instance_or_response = get_object_or_400_response(app_label, object_name, object_id)
+    if isinstance(instance_or_response, HttpResponse):
+        return instance_or_response  # the object is not found can be unknown
+                                     # model or unknown object
     else:
-        initial = {'app_label': app_label,
-                   'object_name': object_name,
-                   'object_id': object_id}
-        form = CreateFavoriteForm(choices=choices, initial=initial)
+        # it's a known object
+        instance = instance_or_response
+        favorites = Favorite.objects.favorites_for_object(instance, request.user)
+        # is it already favorited by the user
+        if favorites:
+            # user already has this object as favorite
+            favorite = favorites[0]
+            ctx = {'object': instance, 'next': _get_next(request), 'favorite': favorite}
+            return render(request, 'favorites/favorite_already_favorite.html', ctx)
+        else:
+            # init folder_choices for UserFolderChoicesForm validation or rendering
+            query = Folder.objects.filter(user=request.user)
+            folder_choices = query.order_by('name').values_list('pk', 'name')
+            if request.method == 'POST':
+                form = UserFolderChoicesForm(choices=folder_choices, data=request.POST)
+                if form.is_valid():
+                    folder_id = form.cleaned_data['folder_id']
+                    if folder_id:
+                        # form is valid hence the folder exists
+                        folder = Folder.objects.get(pk=folder_id)
+                    else:
+                        folder = None
+                    Favorite.objects.create_favorite(instance, request.user, folder)
+                    return redirect(_get_next(request))
+            else:  # GET
+                form = UserFolderChoicesForm(choices=folder_choices)
+            # if form is not valid or if it's a GET request
+            ctx = {'form': form, 'object': instance, 'next':_get_next(request)}
+            return render(request, 'favorites/favorite_add.html', ctx)
 
-    model = get_model(app_label, object_name)
-    if model is None:
-        return HttpResponseBadRequest()
-    obj = get_object_or_404(model, pk=object_id)
 
-    ctx = {'form': form, 'object': obj, 'next':_get_next(request)}
-    return render(request, 'favorites/favorite_add.html', ctx)
-
+### DELETE
 
 @login_required
 def favorite_delete_for_object(request,
                                app_label,
                                object_name,
                                object_id):
-    """Renders a formular to get confirmation to unfavorite the
-    object represented by `app_label`, `object_name` and `object_id`.
-    It raise a 404 exception if there is not such object."""
-    model = get_model(app_label, object_name)
-    if model is None:
-        return HttpResponseBadRequest()
-    obj = get_object_or_404(model, pk=object_id)
+    """Renders a formular to get confirmation to unfavorite the object
+    represented by `app_label`, `object_name` and `object_id`. It raise a 404
+    exception if there is not such object. Redirects to ``favorite_delete``."""
+    # Is it a valid object ?
+    instance_or_response = get_object_or_400_response(app_label, object_name, object_id)
+    if isinstance(instance_or_response, HttpResponse):
+        # the object is not found can be unknown model or unknown object
+        return instance_or_response
+    else:
+        instance = instance_or_response
+        favorites = Favorite.objects.favorites_for_object(instance, request.user)
+        if not favorites:
+            # user has no favorite for this object
+            return HttpResponseNotFound()
+        else:
+            favorite = favorites[0]
+            return redirect(reverse('favorite_delete', kwargs={'object_id': favorite.pk}))
 
-    query = Favorite.objects.favorites_for_object(obj, request.user)
-
-    try:
-        favorite = query[0]
-    except:
-        return HttpResponseNotFound()
-
-    form = ObjectIdForm(initial={'object_id': favorite.pk})
-
-    ctx = {'form': form, 'object': obj, 'next': _get_next(request)}
-    return render(request, 'favorites/favorite_delete.html', ctx)
 
 @login_required
 def favorite_delete(request, object_id):
     """Renders a formular to get confirmation to unfavorite the object
     the favorite that has ``object_id`` as id. It raise a 404 if there
-    is not such a object, a HttpResponseForbidden if the favorite is not
+    is not such a favorite, a HttpResponseForbidden if the favorite is not
     owned by current user"""
     favorite = get_object_or_404(Favorite, pk=object_id)
-    if request.method == 'POST':
-        form = ValidationForm(request.POST)
-        if form.is_valid():
-            if request.user == favorite.user:
+    # check credentials
+    if not request.user == favorite.user:
+        return HttpResponseForbidden()
+    else:
+        if request.method == 'POST':
+            form = ValidationForm(request.POST)
+            if form.is_valid():
                 favorite.delete()
                 return redirect(_get_next(request))
-            else:
-                return HttpResponseForbidden()
-    instance = favorite.content_object
-    form = ValidationForm()
-    ctx = {'form': form, 'object': instance, 'next': _get_next(request)}
-    ctx = RequestContext(request, ctx)
-    return render_to_response('favorites/favorite_delete.html', ctx)
+        else:
+            form = ValidationForm()
+        # if form is not valid or if it's a GET request
+        ctx = {'form': form, 'favorite': favorite, 'next': _get_next(request)}
+        return render(request, 'favorites/favorite_delete.html', ctx)
+
+
+### MOVE
+
 
 @login_required
 def favorite_move(request, object_id):
     """Renders a formular to move a favorite to another folder"""
     favorite = get_object_or_404(Favorite, pk=object_id)
+    # check credentials
     if not favorite.user == request.user:
         return HttpResponseForbidden()
+    else:
+        # init folder choices for form
+        folder_choices = Folder.objects.filter(user=request.user).order_by('name').values_list('pk', 'name')
 
-    if request.method == 'POST':
-        choices = [(0, '')]
-        choices.extend(Folder.objects.filter(user=request.user).order_by('name').values_list('pk', 'name'))
-        form = UpdateFavoriteForm(choices=choices, data=request.POST)
-
-        if form.is_valid():
-            folder_id = form.cleaned_data['folder']
-            if folder_id == '':
-                folder = None
-            else:
-                folder = get_object_or_404(Folder, pk=folder_id)
-            favorite.folder = folder
-            favorite.save()
-            return redirect(_get_next(request))
-
-    dictionary = {
-    'favorite': favorite,
-    'next': _get_next(request),
-    }
-    return render(request,
-                  'favorites/favorite_move.html',
-                  dictionary)
+        if request.method == 'POST':
+            form = UserFolderChoicesForm(choices=folder_choices, data=request.POST)
+            if form.is_valid():
+                folder_id = form.cleaned_data['folder_id']
+                if folder_id == '':
+                    folder = None
+                else:
+                    folder = get_object_or_404(Folder, pk=folder_id)
+                favorite.folder = folder
+                favorite.save()
+                return redirect(_get_next(request))
+        else:
+            folder_id = favorite.folder.pk if favorite.folder else ''
+            form = UserFolderChoicesForm(choices=folder_choices, initial={'folder_id': folder_id})
+        # form is not valid or it's a GET request
+        ctx = {'favorite': favorite, 'next': _get_next(request), 'form': form}
+        return render(request, 'favorites/favorite_move.html', ctx)
 
 
 @login_required
 def favorite_move_to_folder(request, favorite_id, folder_id):
-    """moves a favorite to a folder provided a get parameter with confirmation"""
+    """moves a favorite to a folder provided as a get parameter with confirmation"""
     favorite = get_object_or_404(Favorite, pk=favorite_id)
+    # check credentials on favorite
     if request.user != favorite.user:
         return HttpResponseForbidden()
+    # fetch folder
     if folder_id:
         folder = get_object_or_404(Folder, pk=folder_id)
-        folder_pk = folder.pk
-    else:
-        folder = None
-        folder_pk = '' # special case for root folder
-    if folder is not None and request.user != folder.user:
-        return HttpResponseForbidden()
+        # check credentials
+        if request.user != folder.user:
+            folder_pk = folder.pk
+            return HttpResponseForbidden()
 
-    form = FavoriteMoveHiddenForm(initial={'folder': folder_pk,
-                                           'object_id': favorite.pk})
-    next_url = request.GET.get('next', None)
+    folder = None
+    folder_pk = '' # special case for root folder
 
-    ctx = {'form': form,
-           'favorite': favorite,
-           'folder': folder,
-           'next': next}
-    ctx = RequestContext(request, ctx)
-    return render_to_response('favorites/favorite_move_to_folder.html', ctx)
+    form = ValidationForm()
+    next_url = _get_next(request)
+    ctx = {
+    'form': form,
+    'favorite': favorite,
+    'folder': folder,
+    'next': next
+}
+    return render(request, 'favorites/favorite_move_to_folder.html', ctx)
 
 
 @login_required
 def favorite_toggle_share(request, favorite_id):
     """Confirm before submiting the toggle share action"""
     favorite = get_object_or_404(Favorite, pk=favorite_id)
+    # check crendentials
     if request.user != favorite.user:
         return HttpResponseForbidden()
-    if request.method == 'POST':
-        form = ValidationForm(data=request.POST)
-        if form.is_valid():
-            favorite.shared = False if favorite.shared else True  # toggle
-            favorite.save()
-            return redirect(_get_next(request))
     else:
-        form = ValidationForm()
-    ctx = {'favorite': favorite}
-    ctx = RequestContext(request, ctx)
-    return render_to_response('favorites/favorite_toggle_share.html', ctx)
+        if request.method == 'POST':
+            form = ValidationForm(data=request.POST)
+            if form.is_valid():
+                favorite.shared = False if favorite.shared else True  # toggle
+                favorite.save()
+                return redirect(_get_next(request))
+        else:
+            form = ValidationForm()
+        # form is not valid or it's a GET request
+        ctx = {'favorite': favorite}
+        return render(request, 'favorites/favorite_toggle_share.html', ctx)
 
 
 @login_required
