@@ -13,9 +13,7 @@ from django.core.urlresolvers import reverse
 
 from utils import get_object_or_400_response
 from models import Favorite, Folder
-from favorites.forms import (ObjectIdForm, ObjectHiddenForm,  FolderForm,
-                             CreateFavoriteForm, UpdateFavoriteForm,
-                             FavoriteMoveHiddenForm, ValidationForm)
+from favorites.forms import FolderForm, CreateFavoriteForm, ValidationForm
 
 
 def _validate_next_parameter(request, next_url):
