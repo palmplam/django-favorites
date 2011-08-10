@@ -42,7 +42,7 @@ class FolderForm(forms.Form):
 
 ### FAVORITE FORMS #########################################################
 
-class CreateFavoriteForm(ObjectHiddenForm):
+class CreateFavoriteForm(forms.Form):
     """Form to confirm favorite creation"""
 
     def __init__(self, choices, **kwargs):
