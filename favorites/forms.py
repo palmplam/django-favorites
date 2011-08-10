@@ -23,14 +23,14 @@ class FolderForm(forms.Form):
     name = forms.CharField(max_length=100)
 
 
-class CreateFavoriteForm(forms.Form):
+class UserFolderChoicesForm(forms.Form):
     """Form to confirm favorite creation"""
-    folder = EmptyChoiceField(required=False,
+    folder_id = EmptyChoiceField(required=False,
                               label=_("Store in a folder?"),
                               empty_label=_("No folder"))
     def __init__(self, choices, **kwargs):
-        super(CreateFavoriteForm, self).__init__(**kwargs)
-        self.fields['folder'].choices = choices
+        super(UserFolderChoicesForm, self).__init__(**kwargs)
+        self.fields['folder_id'].choices = choices
 
 
 class ValidationForm(forms.Form):

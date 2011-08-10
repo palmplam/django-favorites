@@ -13,7 +13,7 @@ from django.core.urlresolvers import reverse
 
 from utils import get_object_or_400_response
 from models import Favorite, Folder
-from favorites.forms import FolderForm, CreateFavoriteForm, ValidationForm
+from favorites.forms import FolderForm, UserFolderChoicesForm, ValidationForm
 
 
 def _validate_next_parameter(request, next_url):
@@ -146,13 +146,13 @@ def favorite_add(request, app_label, object_name, object_id):  #FIXME factor
             ctx = {'object': instance, 'next': _get_next(request), 'favorite': favorite}
             return render(request, 'favorites/favorite_already_favorite.html', ctx)
         else:
-            # init folder_choices for CreateFavoriteForm validation or rendering
+            # init folder_choices for UserFolderChoicesForm validation or rendering
             query = Folder.objects.filter(user=request.user)
             folder_choices = query.order_by('name').values_list('pk', 'name')
             if request.method == 'POST':
-                form = CreateFavoriteForm(choices=folder_choices, data=request.POST)
+                form = UserFolderChoicesForm(choices=folder_choices, data=request.POST)
                 if form.is_valid():
-                    folder_id = form.cleaned_data['folder']
+                    folder_id = form.cleaned_data['folder_id']
                     if folder_id:
                         # form is valid hence the folder exists
                         folder = Folder.objects.get(pk=folder_id)
@@ -161,7 +161,7 @@ def favorite_add(request, app_label, object_name, object_id):  #FIXME factor
                     Favorite.objects.create_favorite(instance, request.user, folder)
                     return redirect(_get_next(request))
             else:  # GET
-                form = CreateFavoriteForm(choices=folder_choices)
+                form = UserFolderChoicesForm(choices=folder_choices)
             # if form is not valid or if it's a GET request
             ctx = {'form': form, 'object': instance, 'next':_get_next(request)}
             return render(request, 'favorites/favorite_add.html', ctx)
@@ -231,9 +231,9 @@ def favorite_move(request, object_id):
         folder_choices = Folder.objects.filter(user=request.user).order_by('name').values_list('pk', 'name')
 
         if request.method == 'POST':
-            form = CreateFavoriteForm(choices=folder_choices, data=request.POST)
+            form = UserFolderChoicesForm(choices=folder_choices, data=request.POST)
             if form.is_valid():
-                folder_id = form.cleaned_data['folder']
+                folder_id = form.cleaned_data['folder_id']
                 if folder_id == '':
                     folder = None
                 else:
@@ -243,7 +243,7 @@ def favorite_move(request, object_id):
                 return redirect(_get_next(request))
         else:
             folder_id = favorite.folder.pk if favorite.folder else ''
-            form = CreateFavoriteForm(choices=folder_choices, initial={'folder': folder_id})
+            form = UserFolderChoicesForm(choices=folder_choices, initial={'folder_id': folder_id})
         # form is not valid or it's a GET request
         ctx = {'favorite': favorite, 'next': _get_next(request), 'form': form}
         return render(request, 'favorites/favorite_move.html', ctx)
