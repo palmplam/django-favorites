@@ -338,10 +338,7 @@ class AddFavoriteTests(BaseFavoritesTestCase):
     'object_id': dummy.pk
 })
         response = self.client.post(target_url,
-                                    {'app_label': 'favorites',
-                                     'object_name': 'dummymodel',
-                                     'object_id': dummy.pk,
-                                     'folder_id': folder.pk})
+                                    {'folder_id': folder.pk})
         self.assertEquals(response.status_code, 302)
         godzilla.delete()
         folder.delete()
@@ -362,10 +359,7 @@ class AddFavoriteTests(BaseFavoritesTestCase):
     'object_id': dummy.pk
 })
         response = self.client.post(target_url,
-                                    {'app_label': 'favorites',
-                                     'object_name': 'dummymodel',
-                                     'object_id': dummy.pk,
-                                     'folder_id': folder.pk})
+                                    {'folder_id': folder.pk})
         # form validation makes it impossible for a rogue user
         # to a favorite that i do not own
         self.assertEqual(response.status_code, 200)
