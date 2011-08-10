@@ -110,6 +110,7 @@ def folder_delete(request, object_id):
 
 ### LIST
 
+
 @login_required
 def favorite_list(request):
     object_list = Favorite.objects.favorites_for_user(request.user)
@@ -118,6 +119,7 @@ def favorite_list(request):
 
 
 ### ADD
+
 
 @login_required
 def favorite_add(request, app_label, object_name, object_id):  #FIXME factor
@@ -165,6 +167,7 @@ def favorite_add(request, app_label, object_name, object_id):  #FIXME factor
             # if form is not valid or if it's a GET request
             ctx = {'form': form, 'object': instance, 'next':_get_next(request)}
             return render(request, 'favorites/favorite_add.html', ctx)
+
 
 ### DELETE
 
@@ -215,35 +218,37 @@ def favorite_delete(request, object_id):
         return render(request, 'favorites/favorite_delete.html', ctx)
 
 
+### MOVE
+
+
 @login_required
 def favorite_move(request, object_id):
     """Renders a formular to move a favorite to another folder"""
     favorite = get_object_or_404(Favorite, pk=object_id)
+    # check credentials
     if not favorite.user == request.user:
         return HttpResponseForbidden()
+    else:
+        # init folder choices for form
+        folder_choices = Folder.objects.filter(user=request.user).order_by('name').values_list('pk', 'name')
 
-    if request.method == 'POST':
-        choices = [(0, '')]
-        choices.extend(Folder.objects.filter(user=request.user).order_by('name').values_list('pk', 'name'))
-        form = UpdateFavoriteForm(choices=choices, data=request.POST)
-
-        if form.is_valid():
-            folder_id = form.cleaned_data['folder']
-            if folder_id == '':
-                folder = None
-            else:
-                folder = get_object_or_404(Folder, pk=folder_id)
-            favorite.folder = folder
-            favorite.save()
-            return redirect(_get_next(request))
-
-    dictionary = {
-    'favorite': favorite,
-    'next': _get_next(request),
-    }
-    return render(request,
-                  'favorites/favorite_move.html',
-                  dictionary)
+        if request.method == 'POST':
+            form = CreateFavoriteForm(choices=folder_choices, data=request.POST)
+            if form.is_valid():
+                folder_id = form.cleaned_data['folder']
+                if folder_id == '':
+                    folder = None
+                else:
+                    folder = get_object_or_404(Folder, pk=folder_id)
+                favorite.folder = folder
+                favorite.save()
+                return redirect(_get_next(request))
+        else:
+            folder_id = favorite.folder.pk if favorite.folder else ''
+            form = CreateFavoriteForm(choices=folder_choices, initial={'folder': folder_id})
+        # form is not valid or it's a GET request
+        ctx = {'favorite': favorite, 'next': _get_next(request), 'form': form}
+        return render(request, 'favorites/favorite_move.html', ctx)
 
 
 @login_required
