@@ -38,3 +38,6 @@ class UserFolderChoicesForm(forms.Form):
 
 class ValidationForm(forms.Form):
     pass
+
+class HiddenFolderForm(forms.Form):
+    folder_id = forms.IntegerField(widget=forms.HiddenInput())
