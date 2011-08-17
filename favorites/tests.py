@@ -240,7 +240,7 @@ class FavoriteListTests(BaseFavoritesTestCase):
         dummy = DummyModel()
         dummy.save()
         Favorite.objects.create_favorite(dummy, godzilla)
-        response = self.client.get('/favorites/')
+        response = self.client.get(reverse('favorites:favorite_list'))
         self.assertEquals(response.status_code, 200)
         dummy.delete()
         godzilla.delete()
@@ -319,8 +319,10 @@ class AddFavoriteTests(BaseFavoritesTestCase):
     'object_name': DummyModel._meta.module_name,
     'object_id': 1
 })
-        response = self.client.get('/favorite/add/favorites/dummy/1')
-        self.assertEquals(response.status_code, 302)
+        response = self.client.get(target_url)
+        login_url = reverse('django.contrib.auth.views.login')
+        redirect_url_test = '%s?next=%s' % (login_url, target_url)
+        self.assertRedirects(response, redirect_url_test)
 
     def test_post(self):
         """User submit a valid form, the favorite is added to his or her favorites."""
@@ -541,8 +543,8 @@ class DeleteFavoriteTests(BaseFavoritesTestCase):  # FIXME: remove because doubl
         target_url = reverse('favorites:favorite_delete', kwargs={'object_id': favorite.pk})
         response = self.client.get(target_url)
         self.assertEquals(response.status_code, 200)
-        self.assertIsNotNone(response.context.get('form', None))
-        self.assertIsNotNone(response.context.get('favorite', None))
+        self.assertIsNotNone(response.context['form'])
+        self.assertIsNotNone(response.context['favorite'])
         self.assertEquals(response.context['favorite'].pk, favorite.pk)
         self.assertEquals(response.context['favorite'].content_object.pk, dummy.pk)
         godzilla.delete()
