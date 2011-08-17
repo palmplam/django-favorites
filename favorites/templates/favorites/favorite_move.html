@@ -1,4 +1,11 @@
 {% load favorites_tags %}
 <h1>Move <i>{{ favorite }}</i></h1>
-{{ form }}
+<from action="?next={{next}}" method="POST">{% csrf_token %}
+    {% for field in form %}
+        <div class="fieldWrapper">
+            {{ field.errors }}
+            {{ field.label_tag }}: {{ field }}
+        </div>
+    {% endfor %}
+    <p><input type="submit" value="Move"/></p>
 </form>

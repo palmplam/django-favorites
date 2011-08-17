@@ -190,7 +190,7 @@ def favorite_delete_for_object(request,
             return HttpResponseNotFound()
         else:
             favorite = favorites[0]
-            return redirect(reverse('favorite_delete', kwargs={'object_id': favorite.pk}))
+            return redirect(reverse('favorites:favorite_delete', kwargs={'object_id': favorite.pk}))
 
 
 @login_required
