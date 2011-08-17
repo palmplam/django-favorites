@@ -112,9 +112,9 @@ register.tag('favorite_entry_for_item', do_favorite_entry_for_item)
 
 
 @register.simple_tag(takes_context=True)
-def url_add_to_favorites(context, ns, object):
+def url_add_to_favorites(context, object):
     """The template should have a request context"""
-    view_name = '%s:favorite_add' % ns
+    view_name = 'favorites:favorite_add'
     args = (object._meta.app_label.lower(),
             object._meta.object_name.lower(),
             object.pk)
