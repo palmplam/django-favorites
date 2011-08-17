@@ -6,6 +6,6 @@
 
 <ul>
 {% for object in object_list %}
-    <li><a href="{% url_add_to_favorites 'favorites' object %}">{{object}}</a></li>
+    <li>{{object}} [<a href="{% url_add_to_favorites object %}">add to favorite</a>]</li>
 {% endfor %}
 </ul>
