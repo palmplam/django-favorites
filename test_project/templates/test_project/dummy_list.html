@@ -1,0 +1,11 @@
+{% load favorites_tags %}
+
+<h1><a href="{% url favorites:favorite_list %}">Favorites</a></h1>
+
+<h1>Dummy objects</h1>
+
+<ul>
+{% for object in object_list %}
+    <li><a href="{% url_add_to_favorites 'favorites' object %}">{{object}}</a></li>
+{% endfor %}
+</ul>
