@@ -20,11 +20,11 @@ msgstr ""
 
 #: forms.py:56
 msgid "Store in a folder?"
-msgstr "Ranger dans un dossier ?"
+msgstr "Ranger dans un classeur ?"
 
 #: forms.py:57
 msgid "No folder"
-msgstr "Non, aucun dossier"
+msgstr "Non, aucun classeur"
 
 #: models.py:34
 msgid "favorite"
