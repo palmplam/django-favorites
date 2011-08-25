@@ -1,8 +1,12 @@
+{% load favorites_tags %}
+
 <h1>Your favorites</h1>
 {% if favorites %}
 <ul>
     {% for favorite in favorites %}
-    <li>{% if favorite.shared %}[<b>shared</b>] {% endif %}{{favorite}}{% if favorite.folder %}@{{favorite.folder}}{% endif %} [<a href="{% url favorite_delete favorite.pk %}?next={% url favorite_list %}">remove</a>][<a href="{% url favorite_move favorite.id %}?next={% url favorite_list %}">move</a>][<a href="{% url favorite_move_to_folder favorite.pk 1 %}?next=/library/favorites/">move to folder@{pk=1}</a>][<a href="{% url favorite_toggle_share favorite.pk %}?next=/library/favorites/">toggle share</a>]</li>
+    <li>
+        {% if favorite.shared %}[<b>shared</b>] {% endif %}{{favorite}}{% if favorite.folder %}@{{favorite.folder}}{% endif %} [<a href="{% url favorites:favorite_delete favorite.pk %}?next={% url favorites:favorite_list %}">remove</a>][<a href="{% url favorites:favorite_move favorite.id %}?next={% url favorites:favorite_list %}">move</a>][<a href="{% url favorites:favorite_move_to_folder favorite.pk 1 %}?next=/favorites/">move to folder@{pk=1}</a>][<a href="{% url favorites:favorite_toggle_share favorite.pk %}?next=/favorites/">toggle share</a>]
+        {% favorite_move_widget favorite %}</li>
     {% endfor %}
 </ul>
 {% else %}

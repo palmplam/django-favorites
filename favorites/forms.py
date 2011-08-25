@@ -20,7 +20,7 @@ class EmptyChoiceField(forms.ChoiceField):
 
 
 class FolderForm(forms.Form):
-    name = forms.CharField(max_length=100)
+    name = forms.CharField(max_length=100, label=_("name"))
 
 
 class UserFolderChoicesForm(forms.Form):
@@ -38,3 +38,6 @@ class UserFolderChoicesForm(forms.Form):
 
 class ValidationForm(forms.Form):
     pass
+
+class HiddenFolderForm(forms.Form):
+    folder_id = forms.IntegerField(widget=forms.HiddenInput())

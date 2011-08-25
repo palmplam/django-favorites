@@ -3,3 +3,4 @@
 *~
 favorites.egg-info
 .DS_Store
+*.sqlite

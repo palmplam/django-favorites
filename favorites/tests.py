@@ -19,8 +19,6 @@ class BarModel(models.Model):
 
 
 class BaseFavoritesTestCase(TestCase):
-    urls = 'favorites.urls'
-
     def setUp(self):
         pass
 
@@ -48,7 +46,7 @@ class FolderTests(BaseFavoritesTestCase):
         Folder(name="bar", user=godzilla).save()
 
         self.client.login(username='godzilla', password='godzilla')
-        response = self.client.get(reverse('folder_list'))
+        response = self.client.get(reverse('favorites:folder_list'))
 
         for folder in response.context['object_list']:
             self.assertIn(folder.name, ['foo', 'bar'])
@@ -68,7 +66,7 @@ class FolderTests(BaseFavoritesTestCase):
         Folder(name="bar", user=godzilla).save()
 
         self.client.login(username='leviathan', password='leviathan')
-        response = self.client.get(reverse('folder_list'))
+        response = self.client.get(reverse('favorites:folder_list'))
         self.assertEquals(len(response.context['object_list']), 0)
 
         Folder.objects.all().delete()
@@ -78,7 +76,7 @@ class FolderTests(BaseFavoritesTestCase):
         """Test that ``folder_list`` url requires that the user is logged in.
 
         If the user is not logged the should be redirected to login page."""
-        response = self.client.get(reverse('folder_list'))
+        response = self.client.get(reverse('favorites:folder_list'))
         self.assertEquals(response.status_code, 302)
 
 
@@ -89,13 +87,13 @@ class FolderAddTests(BaseFavoritesTestCase):
         """A logged in user try to fetch the formular. Returns a 200."""
         godzilla = self.user('godzilla')
         self.client.login(username='godzilla', password='godzilla')
-        response = self.client.get(reverse('folder_add'))
+        response = self.client.get(reverse('favorites:folder_add'))
         self.assertEquals(response.status_code, 200)
         godzilla.delete()
 
     def test_login_required(self):
         """Not logged user haven't access to this page. Redirects to login page."""
-        response = self.client.get(reverse('folder_add'))
+        response = self.client.get(reverse('favorites:folder_add'))
         self.assertEquals(response.status_code, 302)
 
     def test_post(self):
@@ -105,7 +103,7 @@ class FolderAddTests(BaseFavoritesTestCase):
         is redirected"""
         godzilla = self.user('godzilla')
         self.client.login(username='godzilla', password='godzilla')
-        response = self.client.post(reverse('folder_add'), {'name': 'japan'})
+        response = self.client.post(reverse('favorites:folder_add'), {'name': 'japan'})
         self.assertEquals(response.status_code, 302)
         self.assertEquals(Folder.objects.filter(user=godzilla).count(), 1)
         Folder.objects.all().delete()
@@ -117,7 +115,7 @@ class FolderDeleteTests(BaseFavoritesTestCase):
 
     def test_login_required(self):
         """The user should be logged in to delete something."""
-        response = self.client.get(reverse('folder_delete', args=(1,)))
+        response = self.client.get(reverse('favorites:folder_delete', args=(1,)))
         self.assertEquals(response.status_code, 302)
 
     def test_post(self):
@@ -126,7 +124,7 @@ class FolderDeleteTests(BaseFavoritesTestCase):
         folder = Folder(name='japan', user=godzilla)
         folder.save()
         self.client.login(username='godzilla', password='godzilla')
-        response = self.client.post(reverse('folder_delete', args=(folder.pk,)), {'object_id': folder.pk})
+        response = self.client.post(reverse('favorites:folder_delete', args=(folder.pk,)), {'object_id': folder.pk})
         self.assertEquals(response.status_code, 302)
         self.assertEquals(Folder.objects.filter(user=godzilla).count(), 0)
         godzilla.delete()
@@ -135,7 +133,7 @@ class FolderDeleteTests(BaseFavoritesTestCase):
         """Try to delete a folder that does not exists. Returns a 404."""
         godzilla = self.user('godzilla')
         self.client.login(username='godzilla', password='godzilla')
-        response = self.client.post(reverse('folder_delete', args=(0,)), {'object_id': 1})
+        response = self.client.post(reverse('favorites:folder_delete', args=(0,)), {'object_id': 1})
         self.assertEquals(response.status_code, 404)
         godzilla.delete()
 
@@ -146,7 +144,7 @@ class FolderDeleteTests(BaseFavoritesTestCase):
         folder.save()
         leviathan = self.user('leviathan')
         self.client.login(username='leviathan', password='leviathan')
-        response = self.client.post(reverse('folder_delete', args=(folder.pk,)), {'object_id': folder.pk})
+        response = self.client.post(reverse('favorites:folder_delete', args=(folder.pk,)), {'object_id': folder.pk})
         self.assertEquals(response.status_code, 403)
         godzilla.delete()
         leviathan.delete()
@@ -157,7 +155,7 @@ class FolderDeleteTests(BaseFavoritesTestCase):
         self.client.login(username='godzilla', password='godzilla')
         folder = Folder(name='japan', user=godzilla)
         folder.save()
-        response = self.client.get(reverse('folder_delete', args=(folder.pk,)))
+        response = self.client.get(reverse('favorites:folder_delete', args=(folder.pk,)))
         self.assertEquals(response.status_code, 200)
         folder.delete()
         godzilla.delete()
@@ -166,7 +164,7 @@ class FolderDeleteTests(BaseFavoritesTestCase):
         """If you try to delete an unknow folder. Returns 404."""
         godzilla = self.user('godzilla')
         self.client.login(username='godzilla', password='godzilla')
-        response = self.client.get(reverse('folder_delete', args=(0,)))
+        response = self.client.get(reverse('favorites:folder_delete', args=(0,)))
         self.assertEquals(response.status_code, 404)
         godzilla.delete()
 
@@ -180,7 +178,7 @@ class FolderUpdateTests(BaseFavoritesTestCase):
         self.client.login(username='godzilla', password='godzilla')
         folder = Folder(name='japan', user=godzilla)
         folder.save()
-        response = self.client.get(reverse('folder_update', args=(folder.pk,)))
+        response = self.client.get(reverse('favorites:folder_update', args=(folder.pk,)))
         self.assertEquals(response.status_code, 200)
         godzilla.delete()
         folder.delete()
@@ -190,7 +188,7 @@ class FolderUpdateTests(BaseFavoritesTestCase):
         godzilla = self.user('godzilla')
         folder = Folder(name='japan', user=godzilla)
         folder.save()
-        response = self.client.get(reverse('folder_update', args=(folder.pk,)))
+        response = self.client.get(reverse('favorites:folder_update', args=(folder.pk,)))
         self.assertEquals(response.status_code, 302)
         folder.delete()
         godzilla.delete()
@@ -203,7 +201,7 @@ class FolderUpdateTests(BaseFavoritesTestCase):
         self.client.login(username='godzilla', password='godzilla')
         folder = Folder(name='japan', user=leviathan)
         folder.save()
-        response = self.client.get(reverse('folder_update', args=(folder.pk,)))
+        response = self.client.get(reverse('favorites:folder_update', args=(folder.pk,)))
         self.assertEquals(response.status_code, 403)
         godzilla.delete()
         leviathan.delete()
@@ -213,7 +211,7 @@ class FolderUpdateTests(BaseFavoritesTestCase):
         """User try to delete a folder that does not exists. Returns a 404."""
         godzilla = self.user('godzilla')
         self.client.login(username='godzilla', password='godzilla')
-        response = self.client.get(reverse('folder_update', args=(0,)))
+        response = self.client.get(reverse('favorites:folder_update', args=(0,)))
         self.assertEquals(response.status_code, 404)
         godzilla.delete()
 
@@ -223,7 +221,7 @@ class FolderUpdateTests(BaseFavoritesTestCase):
         self.client.login(username='godzilla', password='godzilla')
         folder = Folder(name='japan', user=godzilla)
         folder.save()
-        response = self.client.post(reverse('folder_update', args=(folder.pk,)),
+        response = self.client.post(reverse('favorites:folder_update', args=(folder.pk,)),
                                     {'name': 'Nippon-koku'})
         self.assertEquals(response.status_code, 302)
         folder = Folder.objects.get(pk=folder.pk)
@@ -242,7 +240,7 @@ class FavoriteListTests(BaseFavoritesTestCase):
         dummy = DummyModel()
         dummy.save()
         Favorite.objects.create_favorite(dummy, godzilla)
-        response = self.client.get('/favorites/')
+        response = self.client.get(reverse('favorites:favorite_list'))
         self.assertEquals(response.status_code, 200)
         dummy.delete()
         godzilla.delete()
@@ -255,7 +253,7 @@ class FavoriteListTests(BaseFavoritesTestCase):
         dummy = DummyModel()
         dummy.save()
         Favorite.objects.create_favorite(dummy, leviathan)
-        response = self.client.get(reverse('favorite_list'))
+        response = self.client.get(reverse('favorites:favorite_list'))
         self.assertEquals(response.status_code, 200)
         self.assertEquals(len(response.context['favorites']), 0)
         dummy.delete()
@@ -264,7 +262,7 @@ class FavoriteListTests(BaseFavoritesTestCase):
 
     def test_login_required(self):
         """User should be logged in."""
-        response = self.client.get(reverse('favorite_list'))
+        response = self.client.get(reverse('favorites:favorite_list'))
         self.assertEquals(response.status_code, 302)
 
 
@@ -277,7 +275,7 @@ class AddFavoriteTests(BaseFavoritesTestCase):
         self.client.login(username='godzilla', password='godzilla')
         dummy = DummyModel()
         dummy.save()
-        target_url = reverse('favorite_add', kwargs={
+        target_url = reverse('favorites:favorite_add', kwargs={
     'app_label': DummyModel._meta.app_label,
     'object_name': dummy._meta.module_name,
     'object_id': dummy.pk
@@ -292,7 +290,7 @@ class AddFavoriteTests(BaseFavoritesTestCase):
         """User try to favorite an invalid model object. Returns a 400."""
         godzilla = self.user('godzilla')
         self.client.login(username='godzilla', password='godzilla')
-        target_url = reverse('favorite_add', kwargs={
+        target_url = reverse('favorites:favorite_add', kwargs={
     'app_label': 'foo',
     'object_name': 'bar',
     'object_id': '0'
@@ -305,7 +303,7 @@ class AddFavoriteTests(BaseFavoritesTestCase):
         """User try to favorite an unknown object. Returns a 400."""
         godzilla = self.user('godzilla')
         self.client.login(username='godzilla', password='godzilla')
-        target_url = reverse('favorite_add', kwargs={
+        target_url = reverse('favorites:favorite_add', kwargs={
     'app_label': DummyModel._meta.app_label,
     'object_name': DummyModel._meta.module_name,
     'object_id': 3
@@ -316,13 +314,15 @@ class AddFavoriteTests(BaseFavoritesTestCase):
 
     def test_login_required(self):
         """User should be logged in"""
-        target_url = reverse('favorite_add', kwargs={  # The target model
+        target_url = reverse('favorites:favorite_add', kwargs={  # The target model
     'app_label': DummyModel._meta.app_label,            # doesn't have to be valid
     'object_name': DummyModel._meta.module_name,
     'object_id': 1
 })
-        response = self.client.get('/favorite/add/favorites/dummy/1')
-        self.assertEquals(response.status_code, 302)
+        response = self.client.get(target_url)
+        login_url = reverse('django.contrib.auth.views.login')
+        redirect_url_test = '%s?next=%s' % (login_url, target_url)
+        self.assertRedirects(response, redirect_url_test)
 
     def test_post(self):
         """User submit a valid form, the favorite is added to his or her favorites."""
@@ -332,7 +332,7 @@ class AddFavoriteTests(BaseFavoritesTestCase):
         folder.save()
         dummy = DummyModel()
         dummy.save()
-        target_url = reverse('favorite_add', kwargs={  # The target model
+        target_url = reverse('favorites:favorite_add', kwargs={  # The target model
     'app_label': DummyModel._meta.app_label,            # doesn't have to be valid
     'object_name': DummyModel._meta.module_name,
     'object_id': dummy.pk
@@ -353,7 +353,7 @@ class AddFavoriteTests(BaseFavoritesTestCase):
         folder.save()
         dummy = DummyModel()
         dummy.save()
-        target_url = reverse('favorite_add', kwargs={
+        target_url = reverse('favorites:favorite_add', kwargs={
     'app_label': DummyModel._meta.app_label,
     'object_name': DummyModel._meta.module_name,
     'object_id': dummy.pk
@@ -372,7 +372,7 @@ class AddFavoriteTests(BaseFavoritesTestCase):
         """User submits try to favorite an object with an unknown model. Returns a 400."""
         godzilla = self.user('godzilla')
         self.client.login(username='godzilla', password='godzilla')
-        target_url = reverse('favorite_add', kwargs={
+        target_url = reverse('favorites:favorite_add', kwargs={
     'app_label': 'foo',
     'object_name': 'bar',
     'object_id': 0
@@ -387,7 +387,7 @@ class DeleteFavoriteTests(BaseFavoritesTestCase):
 
     def test_login_required(self):
         """The user should be logged in to be able to delete a favorite."""
-        target = reverse('favorite_delete', kwargs={'object_id': 123})
+        target = reverse('favorites:favorite_delete', kwargs={'object_id': 123})
         response = self.client.post(target)
         self.assertEquals(response.status_code, 302)
 
@@ -398,7 +398,7 @@ class DeleteFavoriteTests(BaseFavoritesTestCase):
         dummy = DummyModel()
         dummy.save()
         favorite = Favorite.objects.create_favorite(dummy, godzilla)
-        target_url = reverse('favorite_delete', kwargs={'object_id': favorite.pk})
+        target_url = reverse('favorites:favorite_delete', kwargs={'object_id': favorite.pk})
         response = self.client.post(target_url,
                                     {'object_id': favorite.pk})
         self.assertEquals(response.status_code, 302)
@@ -411,7 +411,7 @@ class DeleteFavoriteTests(BaseFavoritesTestCase):
         godzilla = self.user('godzilla')
         self.client.login(username='godzilla', password='godzilla')
         # Both the get "parameter"
-        target_url = reverse('favorite_delete', kwargs={'object_id': favorite.pk})
+        target_url = reverse('favorites:favorite_delete', kwargs={'object_id': favorite.pk})
         # and POST parameter are invalid
         post_values = {'object_id': 0}
         response = self.client.post(target_url, post_values)
@@ -427,7 +427,7 @@ class DeleteFavoriteTests(BaseFavoritesTestCase):
         dummy = DummyModel()
         dummy.save()
         favorite = Favorite.objects.create_favorite(dummy, leviathan)
-        target_url = reverse('favorite_delete', kwargs={'object_id': favorite.pk})
+        target_url = reverse('favorites:favorite_delete', kwargs={'object_id': favorite.pk})
         response = self.client.post(target_url,
                                     {'object_id': favorite.pk})
         self.assertEquals(response.status_code, 403)
@@ -440,7 +440,7 @@ class DeleteFavoriteForObjectTests(BaseFavoritesTestCase):
 
     def test_login_required(self):
         """User should be logged in."""
-        target_url = reverse('favorite_delete_for_object',
+        target_url = reverse('favorites:favorite_delete_for_object',
                          kwargs={ # whatever the object even an invalid objects
     'app_label': 'foo',
     'object_name': 'bar',
@@ -453,7 +453,7 @@ class DeleteFavoriteForObjectTests(BaseFavoritesTestCase):
         """User try to delete an object with an unknown model. Returns a 400."""
         godzilla = self.user('godzilla')
         self.client.login(username='godzilla', password='godzilla')
-        target_url = reverse('favorite_delete_for_object',
+        target_url = reverse('favorites:favorite_delete_for_object',
                          kwargs={
     'app_label': 'foo',
     'object_name': 'bar',
@@ -467,7 +467,7 @@ class DeleteFavoriteForObjectTests(BaseFavoritesTestCase):
         """User try to delete an unknown object. Returns a 400."""
         godzilla = self.user('godzilla')
         self.client.login(username='godzilla', password='godzilla')
-        target_url = reverse('favorite_delete_for_object',
+        target_url = reverse('favorites:favorite_delete_for_object',
                          kwargs={
     'app_label': DummyModel._meta.app_label,
     'object_name': DummyModel._meta.module_name,
@@ -483,7 +483,7 @@ class DeleteFavoriteForObjectTests(BaseFavoritesTestCase):
         dummy = DummyModel()
         dummy.save()
         self.client.login(username='godzilla', password='godzilla')
-        target_url = reverse('favorite_delete_for_object',
+        target_url = reverse('favorites:favorite_delete_for_object',
                          kwargs={
     'app_label': DummyModel._meta.app_label,
     'object_name': DummyModel._meta.module_name,
@@ -500,14 +500,14 @@ class DeleteFavoriteForObjectTests(BaseFavoritesTestCase):
         dummy.save()
         favorite = Favorite.objects.create_favorite(dummy, godzilla)
         self.client.login(username='godzilla', password='godzilla')
-        target_url = reverse('favorite_delete_for_object',
+        target_url = reverse('favorites:favorite_delete_for_object',
                          kwargs={
     'app_label': DummyModel._meta.app_label,
     'object_name': DummyModel._meta.module_name,
     'object_id': dummy.pk
 })
         response = self.client.get(target_url)
-        redirect_url = reverse('favorite_delete', kwargs={'object_id': favorite.pk})
+        redirect_url = reverse('favorites:favorite_delete', kwargs={'object_id': favorite.pk})
         self.assertRedirects(response, redirect_url)
         godzilla.delete()
         dummy.delete()
@@ -520,7 +520,7 @@ class DeleteFavoriteTests(BaseFavoritesTestCase):  # FIXME: remove because doubl
     def test_login_required(self):
         """User should be logged in."""
         # whatever the favorite even invalid
-        target_url = reverse('favorite_delete', kwargs={'object_id': 0})
+        target_url = reverse('favorites:favorite_delete', kwargs={'object_id': 0})
         response = self.client.get(target_url)
         self.assertEquals(response.status_code, 302)
 
@@ -528,7 +528,7 @@ class DeleteFavoriteTests(BaseFavoritesTestCase):  # FIXME: remove because doubl
         """Should return 404 if there is no such favorite."""
         godzilla = self.user('godzilla')
         self.client.login(username='godzilla', password='godzilla')
-        target_url = reverse('favorite_delete', kwargs={'object_id': 123})
+        target_url = reverse('favorites:favorite_delete', kwargs={'object_id': 123})
         response = self.client.get(target_url)
         self.assertEquals(response.status_code, 404)
         godzilla.delete()
@@ -540,11 +540,11 @@ class DeleteFavoriteTests(BaseFavoritesTestCase):  # FIXME: remove because doubl
         dummy = DummyModel()
         dummy.save()
         favorite = Favorite.objects.create_favorite(dummy, godzilla)
-        target_url = reverse('favorite_delete', kwargs={'object_id': favorite.pk})
+        target_url = reverse('favorites:favorite_delete', kwargs={'object_id': favorite.pk})
         response = self.client.get(target_url)
         self.assertEquals(response.status_code, 200)
-        self.assertIsNotNone(response.context.get('form', None))
-        self.assertIsNotNone(response.context.get('favorite', None))
+        self.assertIsNotNone(response.context['form'])
+        self.assertIsNotNone(response.context['favorite'])
         self.assertEquals(response.context['favorite'].pk, favorite.pk)
         self.assertEquals(response.context['favorite'].content_object.pk, dummy.pk)
         godzilla.delete()
@@ -557,7 +557,7 @@ class FavoriteContentTypeList(BaseFavoritesTestCase):
 
     def test_login_required(self):
         """User should be logged in."""
-        target_url = reverse('favorite_content_type_list',
+        target_url = reverse('favorites:favorite_content_type_list',
                              kwargs = {
     'app_label': 'foo',
     'object_name': 'bar'
@@ -593,7 +593,7 @@ class FavoriteContentTypeList(BaseFavoritesTestCase):
             leviathan_instances.append(create_object_n_favorite(leviathan))
 
         # tests
-        target_url = reverse('favorite_content_type_list',
+        target_url = reverse('favorites:favorite_content_type_list',
                              kwargs = {
     'app_label': DummyModel._meta.app_label,
     'object_name': DummyModel._meta.module_name
@@ -635,7 +635,7 @@ class FavoriteContentTypeList(BaseFavoritesTestCase):
             godzilla_instances.append((instance, favorite))
 
         # tests
-        target_url = reverse('favorite_content_type_list',
+        target_url = reverse('favorites:favorite_content_type_list',
                              kwargs = {
     'app_label': DummyModel._meta.app_label,
     'object_name': DummyModel._meta.module_name
@@ -661,7 +661,7 @@ class FavoriteContentTypeList(BaseFavoritesTestCase):
         self.client.login(username='godzilla', password='godzilla')
 
         # tests
-        target_url = reverse('favorite_content_type_list',
+        target_url = reverse('favorites:favorite_content_type_list',
                              kwargs = {
     'app_label': 'foo',
     'object_name': 'bar'
@@ -677,7 +677,7 @@ class MoveFavoriteTests(BaseFavoritesTestCase):
 
     def test_login_required_get(self):
         """User should be logged in."""
-        target_url = reverse('favorite_move',
+        target_url = reverse('favorites:favorite_move',
                              kwargs = {
     'object_id': 0,
 })
@@ -686,7 +686,7 @@ class MoveFavoriteTests(BaseFavoritesTestCase):
 
     def test_login_required_post(self):
         """User should be logged to post."""
-        target_url = reverse('favorite_move',
+        target_url = reverse('favorites:favorite_move',
                              kwargs = {
     'object_id': 0,
 })
@@ -705,7 +705,7 @@ class MoveFavoriteTests(BaseFavoritesTestCase):
             folder = Folder(name="folder-%s" % i, user=godzilla)
             folder.save()
             folders.append(folder)
-        target_url = reverse('favorite_move',
+        target_url = reverse('favorites:favorite_move',
                              kwargs = {
     'object_id': favorite.pk,
 })
@@ -724,7 +724,7 @@ class MoveFavoriteTests(BaseFavoritesTestCase):
         """User try to move an unknown favorite. Returns a 404."""
         godzilla = self.user('godzilla')
         self.client.login(username='godzilla', password='godzilla')
-        target_url = reverse('favorite_move',
+        target_url = reverse('favorites:favorite_move',
                              kwargs = {
     'object_id': 0,
 })
@@ -740,7 +740,7 @@ class MoveFavoriteTests(BaseFavoritesTestCase):
         dummy = DummyModel()
         dummy.save()
         favorite = Favorite.objects.create_favorite(dummy, leviathan)
-        target_url = reverse('favorite_move',
+        target_url = reverse('favorites:favorite_move',
                              kwargs = {
     'object_id': favorite.pk,
 })
@@ -760,7 +760,7 @@ class MoveFavoriteTests(BaseFavoritesTestCase):
         favorite = Favorite.objects.create_favorite(dummy, godzilla)
         folder = Folder(name="japan", user=godzilla)
         folder.save()
-        target_url = reverse('favorite_move',
+        target_url = reverse('favorites:favorite_move',
                              kwargs = {
     'object_id': favorite.pk,
 })
@@ -784,7 +784,7 @@ class MoveFavoriteTests(BaseFavoritesTestCase):
         favorite = Favorite.objects.create_favorite(dummy, godzilla)
         folder = Folder(name="china", user=leviathan)
         folder.save()
-        target_url = reverse('favorite_move',
+        target_url = reverse('favorites:favorite_move',
                              kwargs = {
     'object_id': favorite.pk,
 })
@@ -804,7 +804,7 @@ class MoveFavoriteTests(BaseFavoritesTestCase):
         dummy = DummyModel()
         dummy.save()
         favorite = Favorite.objects.create_favorite(dummy, godzilla)
-        target_url = reverse('favorite_move',
+        target_url = reverse('favorites:favorite_move',
                              kwargs = {
     'object_id': favorite.pk,
 })
@@ -823,7 +823,7 @@ class MoveFavoriteTests(BaseFavoritesTestCase):
         dummy = DummyModel()
         dummy.save()
         favorite = Favorite.objects.create_favorite(dummy, godzilla)
-        target_url = reverse('favorite_move',
+        target_url = reverse('favorites:favorite_move',
                              kwargs = {
     'object_id': favorite.pk,
 })
@@ -842,7 +842,7 @@ class ContentTypeByFolderListTests(BaseFavoritesTestCase):
 
     def test_login_required(self):
         """User should be logged in"""
-        target_url = reverse('favorite_content_type_and_folder_list',
+        target_url = reverse('favorites:favorite_content_type_and_folder_list',
                              kwargs = {
     'app_label': 'foo',
     'object_name': 'bar',
@@ -855,7 +855,7 @@ class ContentTypeByFolderListTests(BaseFavoritesTestCase):
         """User try to list favorites for a model that does not exists. Returns a 400."""
         godzilla = self.user('godzilla')
         self.client.login(username='godzilla', password='godzilla')
-        target_url = reverse('favorite_content_type_and_folder_list',
+        target_url = reverse('favorites:favorite_content_type_and_folder_list',
                              kwargs = {
     'app_label': 'foo',
     'object_name': 'bar',
@@ -869,7 +869,7 @@ class ContentTypeByFolderListTests(BaseFavoritesTestCase):
         """User try to list favorites for a folder that does not exists. Returns a 404."""
         godzilla = self.user('godzilla')
         self.client.login(username='godzilla', password='godzilla')
-        target_url = reverse('favorite_content_type_and_folder_list',
+        target_url = reverse('favorites:favorite_content_type_and_folder_list',
                              kwargs = {
     'app_label': DummyModel._meta.app_label,
     'object_name': DummyModel._meta.module_name,
@@ -886,7 +886,7 @@ class ContentTypeByFolderListTests(BaseFavoritesTestCase):
         folder = Folder(name='china', user=leviathan)
         folder.save()
         self.client.login(username='godzilla', password='godzilla')
-        target_url = reverse('favorite_content_type_and_folder_list',
+        target_url = reverse('favorites:favorite_content_type_and_folder_list',
                              kwargs = {
     'app_label': DummyModel._meta.app_label,
     'object_name': DummyModel._meta.module_name,
@@ -932,7 +932,7 @@ class ContentTypeByFolderListTests(BaseFavoritesTestCase):
             instances.append((instance, favorite))
 
         self.client.login(username='godzilla', password='godzilla')
-        target_url = reverse('favorite_content_type_and_folder_list',
+        target_url = reverse('favorites:favorite_content_type_and_folder_list',
                              kwargs = {
     'app_label': DummyModel._meta.app_label,
     'object_name': DummyModel._meta.module_name,
@@ -958,7 +958,7 @@ class MoveFavoriteConfirmation(TestCase):
     def test_login_required(self):
         """User should be logged in"""
         client = Client()
-        target_url = reverse('favorite_move_to_folder',
+        target_url = reverse('favorites:favorite_move_to_folder',
                              kwargs={'favorite_id': 1, 'folder_id': 2})
         response = client.get(target_url,
                               follow=True)
@@ -982,7 +982,7 @@ class MoveFavoriteConfirmation(TestCase):
         dummy.save()
         favorite = Favorite.objects.create_favorite(user=user,
                                                     content_object=dummy)
-        target_url = reverse('favorite_move_to_folder',
+        target_url = reverse('favorites:favorite_move_to_folder',
                              kwargs={'favorite_id': favorite.pk, 'folder_id': folder.pk})
         client = Client()
         self.assertTrue(client.login(username='user', password='user'))
@@ -1003,7 +1003,7 @@ class MoveFavoriteConfirmation(TestCase):
         dummy.save()
         favorite = Favorite.objects.create_favorite(user=user2,
                                                     content_object=dummy)
-        target_url = reverse('favorite_move_to_folder',
+        target_url = reverse('favorites:favorite_move_to_folder',
                              args=(favorite.pk,
                                    folder.pk))
         client = Client()
@@ -1022,7 +1022,7 @@ class MoveFavoriteConfirmation(TestCase):
         dummy.save()
         favorite = Favorite.objects.create_favorite(user=user,
                                                     content_object=dummy)
-        target_url = reverse('favorite_move_to_folder',
+        target_url = reverse('favorites:favorite_move_to_folder',
                              args=(favorite.pk,
                                    folder.pk))
         client = Client()
@@ -1035,7 +1035,7 @@ class ToggleShareFavoritesTests(TestCase):
 
     def test_login_required(self):
         """User should be logged in."""
-        target_url = reverse('favorite_toggle_share',
+        target_url = reverse('favorites:favorite_toggle_share',
                              kwargs={'favorite_id': 0})
         client = Client()
         response = client.get(target_url, follow=True)
@@ -1055,7 +1055,7 @@ class ToggleShareFavoritesTests(TestCase):
                                                     content_object=dummy)
         favorite.save()
 
-        target_url = reverse('favorite_toggle_share',
+        target_url = reverse('favorites:favorite_toggle_share',
                              kwargs={'favorite_id': favorite.pk,})
 
         client = Client()
@@ -1077,7 +1077,7 @@ class ToggleShareFavoritesTests(TestCase):
         favorite = Favorite.objects.create_favorite(user=user2,
                                                     content_object=dummy)
         favorite.save()
-        target_url = reverse('favorite_toggle_share',
+        target_url = reverse('favorites:favorite_toggle_share',
                              kwargs={'favorite_id': favorite.pk,})
         client = Client()
         self.assertTrue(client.login(username='user', password='user'))
@@ -1095,7 +1095,7 @@ class ToggleShareFavoritesTests(TestCase):
                                                     content_object=dummy)
         favorite.save()
 
-        target_url = reverse('favorite_toggle_share',
+        target_url = reverse('favorites:favorite_toggle_share',
                              kwargs={'favorite_id': favorite.pk,})
 
 

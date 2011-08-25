@@ -13,8 +13,8 @@ from django.core.urlresolvers import reverse
 
 from utils import get_object_or_400_response
 from models import Favorite, Folder
-from favorites.forms import FolderForm, UserFolderChoicesForm, ValidationForm
-
+from favorites.forms import (FolderForm, UserFolderChoicesForm, ValidationForm,
+                             HiddenFolderForm)
 
 def _validate_next_parameter(request, next_url):
     parsed = urlparse.urlparse(next_url)
@@ -190,7 +190,7 @@ def favorite_delete_for_object(request,
             return HttpResponseNotFound()
         else:
             favorite = favorites[0]
-            return redirect(reverse('favorite_delete', kwargs={'object_id': favorite.pk}))
+            return redirect(reverse('favorites:favorite_delete', kwargs={'object_id': favorite.pk}))
 
 
 @login_required
@@ -261,19 +261,19 @@ def favorite_move_to_folder(request, favorite_id, folder_id):
         folder = get_object_or_404(Folder, pk=folder_id)
         # check credentials
         if request.user != folder.user:
-            folder_pk = folder.pk
             return HttpResponseForbidden()
+        folder_pk = folder.pk
+    else:
+        folder = None
+        folder_pk = '' # special case for root folder
 
-    folder = None
-    folder_pk = '' # special case for root folder
-
-    form = ValidationForm()
+    form = HiddenFolderForm(initial={'folder_id': folder_pk})
     next_url = _get_next(request)
     ctx = {
     'form': form,
     'favorite': favorite,
     'folder': folder,
-    'next': next
+    'next': next_url
 }
     return render(request, 'favorites/favorite_move_to_folder.html', ctx)
 
