@@ -1,0 +1,74 @@
+favorites Package
+=================
+
+:mod:`admin` Module
+-------------------
+
+.. automodule:: favorites.admin
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`forms` Module
+-------------------
+
+.. automodule:: favorites.forms
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`managers` Module
+----------------------
+
+.. automodule:: favorites.managers
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`models` Module
+--------------------
+
+.. automodule:: favorites.models
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`tests` Module
+-------------------
+
+.. automodule:: favorites.tests
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`urls` Module
+------------------
+
+.. automodule:: favorites.urls
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`utils` Module
+-------------------
+
+.. automodule:: favorites.utils
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`views` Module
+-------------------
+
+.. automodule:: favorites.views
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Subpackages
+-----------
+
+.. toctree::
+
+    favorites.templatetags
+
