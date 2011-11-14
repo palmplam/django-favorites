@@ -9,7 +9,6 @@ Welcome to Django-Favorites's documentation!
 Contents:
 
 .. toctree::
-   :maxdepth: 2
   introduction.rst
   getting_started.rst
   api/modules.rst
