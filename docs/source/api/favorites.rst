@@ -33,22 +33,6 @@ favorites Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`tests` Module
--------------------
-
-.. automodule:: favorites.tests
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`urls` Module
-------------------
-
-.. automodule:: favorites.urls
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`utils` Module
 -------------------
 
