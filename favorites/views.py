@@ -371,8 +371,8 @@ def favorite_content_type_and_folder_list(request, app_label, object_name, folde
 
     :template favorites/favorite_{{app_label}}_{{object_name}}_list.html: same as above
 
-    :template favorites/favorite_{{app_label}}_{{object_name}}_list.html: - same as above and 
-                                                                          - ``folder`` :class:`favorites.models.Folder` instance."""
+    :template favorites/favorite_{{app_label}}_{{object_name}}_by_folder_list.html: - same as above and 
+                                                                                    - ``folder`` :class:`favorites.models.Folder` instance."""
     model = get_model(app_label, object_name)
     if model is None:
         return HttpResponseBadRequest()
