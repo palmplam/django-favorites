@@ -1,13 +1,6 @@
 favorites Package
 =================
 
-:mod:`admin` Module
--------------------
-
-.. automodule:: favorites.admin
-    :members:
-    :undoc-members:
-    :show-inheritance:
 
 :mod:`forms` Module
 -------------------
