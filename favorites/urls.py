@@ -1,10 +1,5 @@
-from django.conf.urls.defaults import url
-from django.conf.urls.defaults import patterns
-from django.views.generic.list import ListView
-
-from favorites.models import Favorite
-from favorites.models import Folder
-
+from django.conf.urls import url
+from django.conf.urls import patterns
 
 urlpatterns = patterns("",
                        # favorites urls

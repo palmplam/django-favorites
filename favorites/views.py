@@ -1,14 +1,13 @@
 import urlparse
 
-from django.views.generic.list_detail import object_list, object_detail
-from django.shortcuts import get_object_or_404, redirect, render, render_to_response
+from django.shortcuts import render
+from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
-from django.template import RequestContext
 from django.db.models import get_model
 from django.http import (HttpResponse, HttpResponseNotFound, HttpResponseBadRequest,
                          HttpResponseForbidden)
-from django.utils import simplejson
 from django.core.urlresolvers import reverse
 
 from utils import get_object_or_400_response
@@ -154,7 +153,7 @@ def favorite_add(request, app_label, object_name, object_id):  #FIXME factor
     If it's a `POST` creates the favorite object if there isn't
     a favorite already. If validation fails it renders an
     insightful error message. If the validation succeed the favorite is
-    added and a redirection is returned. If the object is already a favorite 
+    added and a redirection is returned. If the object is already a favorite
     renders a message.
 
     :template favorites/favorite_already_favorite.html: - ``object`` object targeted by the favorite add operation.
@@ -299,9 +298,9 @@ def favorite_move(request, object_id):
 
 @login_required
 def favorite_move_to_folder(request, favorite_id, folder_id):
-    """moves a favorite to a folder provided as a get parameter with confirmation. 
+    """moves a favorite to a folder provided as a get parameter with confirmation.
     If the action is successful the user is redirect using :func:`favorites.views._get_next`.
-    
+
     :template favorites/favorite_move_to_folder.html: - ``form`` :class:`favorites.forms.HiddenFolderForm` instance.
                                                       - ``favorite`` :class:`favorites.models.Favorite` instance.
                                                       - ``folder`` :class:`favorites.models.Folder` instance.
@@ -334,7 +333,7 @@ def favorite_move_to_folder(request, favorite_id, folder_id):
 
 @login_required
 def favorite_toggle_share(request, favorite_id):
-    """Confirm before submiting the toggle share action. If the action is successful 
+    """Confirm before submiting the toggle share action. If the action is successful
     the user is redirect using :func:`favorites.views._get_next`.
 
     :template favorites/favorite_toggle_share.html: - ``favorite`` :class:`favorites.models.Favorite` instance."""
@@ -371,7 +370,7 @@ def favorite_content_type_and_folder_list(request, app_label, object_name, folde
 
     :template favorites/favorite_{{app_label}}_{{object_name}}_list.html: same as above
 
-    :template favorites/favorite_{{app_label}}_{{object_name}}_by_folder_list.html: - same as above and 
+    :template favorites/favorite_{{app_label}}_{{object_name}}_by_folder_list.html: - same as above and
                                                                                     - ``folder`` :class:`favorites.models.Folder` instance."""
     model = get_model(app_label, object_name)
     if model is None:
