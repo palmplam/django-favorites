@@ -29,18 +29,17 @@ def is_favorite(object, user):
 
 @register.inclusion_tag("favorites/favorite_add_remove.html")
 def add_remove_favorite(object, user):
-    favorite = None
-    content_type = ContentType.objects.get_for_model(object)
-    if user.is_authenticated():
-        favorite = Favorite.objects.favorites_for_object(object, user=user)
-        if favorite:
-            favorite = favorite[0]
-        else:
-            favorite = None
+
+    app_label = object._meta.app_label.lower()
+    object_name = object._meta.object_name.lower()
+    tag_id = "%s-%s-%s" % (app_label, object_name, object.pk)
+    favorite = is_favorite(object, user)
     count = Favorite.objects.favorites_for_object(object).count()
 
-    return {"object_id": object.pk,
-            "content_type_id": content_type.pk,
+    return {"tag_id": tag_id,
+            "app_label": app_label,
+            "object_name": object_name,
+            "object_id": object.pk,
             "is_favorite": favorite,
             "count": count}
 
@@ -114,7 +113,7 @@ register.tag('favorite_entry_for_item', do_favorite_entry_for_item)
 @register.simple_tag(takes_context=True)
 def url_add_to_favorites(context, object):
     """The template should have a request context"""
-    view_name = 'favorites:favorite_add'
+    view_name = 'favorite_add'
     args = (object._meta.app_label.lower(),
             object._meta.object_name.lower(),
             object.pk)

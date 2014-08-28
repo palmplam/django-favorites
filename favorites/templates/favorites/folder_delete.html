@@ -1,5 +1,7 @@
+{% load url from future %}
+
 <h1>Delete folder {{ folder.name }}</h1>
-<form method="POST" action="{% url favorites:folder_delete folder.pk %}{% if next %}?next={{next}}{% endif %}">
+<form method="POST" action="{% url "folder_delete" folder.pk %}{% if next %}?next={{next}}{% endif %}">
   {% csrf_token %}
   <input type=submit />
 </form>

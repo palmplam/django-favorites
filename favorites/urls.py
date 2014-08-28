@@ -3,7 +3,7 @@ from django.conf.urls import patterns
 
 urlpatterns = patterns("",
                        # favorites urls
-                       url(r'^favorites/$',
+                       url(r'^$',
                            'favorites.views.favorite_list',
                            name='favorite_list'),
                        # add

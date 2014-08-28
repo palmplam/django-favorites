@@ -1,20 +1,19 @@
-from distutils.core import setup
 import os
+from setuptools import setup, find_packages
 
-
-modules = [
-    'favorites.templatetags',
-    'favorites.templates.favorites',
-]
-
+def read(fname):
+    return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(
     name = 'favorites',
     version = '0.3.2',
     description = 'Generic favorites application for Django',
+    long_description = read('README.rst'),
+
     author = 'Djaz Team',
     author_email = 'devweb@liberation.fr',
-    packages = ['favorites'] + modules,
+
+    packages = find_packages(exclude=['test_project']),
     include_package_data=True,
     package_data = {
            '': ['*.txt', '*.rst'],

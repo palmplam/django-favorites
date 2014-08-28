@@ -1,6 +1,6 @@
 {% load favorites_tags %}
 <h1>Move <i>{{ favorite }}</i></h1>
-<from action="?next={{next}}" method="POST">{% csrf_token %}
+<form action="?next={{next}}" method="POST">{% csrf_token %}
     {{ form.as_p }}
     <p><input type="submit" value="Move"/></p>
 </form>

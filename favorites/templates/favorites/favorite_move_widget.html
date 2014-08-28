@@ -1,3 +1,5 @@
-<form method="POST" action="{% url favorites:favorite_move favorite.pk %}?next={{next}}">{% csrf_token %}
+{% load url from future %}
+
+<form method="POST" action="{% url "favorite_move" favorite.pk %}?next={{next}}">{% csrf_token %}
     {{form}}<input type="submit" value="Move"/>
 </form>
